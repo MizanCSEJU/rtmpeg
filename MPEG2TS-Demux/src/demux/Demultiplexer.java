@@ -26,7 +26,7 @@ public class Demultiplexer {
 			is = new FileInputStream(file);
 	}
 	
-	private byte[] getNextFrame(int offset,int length) throws IOException{
+	private byte[] getNextTSPacket(int offset,int length) throws IOException{
 		
 		byte b[] = new byte[length];
 		is.read(b, offset, length);
@@ -38,7 +38,7 @@ public class Demultiplexer {
 	public static void main(String[] args) throws IOException{
 		File file = new File("a.mpg");
 		Demultiplexer d = new Demultiplexer(file);
-		byte b[] = d.getNextFrame(frameNum*packetSize, packetSize);
+		byte b[] = d.getNextTSPacket(frameNum*packetSize, packetSize);
 		
 	}
 	
