@@ -18,6 +18,7 @@ public class Demultiplexer {
 	
 	private final static int packetSize = 188;
 	private final static int pidH264 = 301;
+	private static int frameNum = 0;
 	private InputStream is;
 	
 
@@ -25,20 +26,20 @@ public class Demultiplexer {
 			is = new FileInputStream(file);
 	}
 	
-	private byte[] readBytes(int offset,int length) throws IOException{
+	private byte[] getNextFrame(int offset,int length) throws IOException{
+		
 		byte b[] = new byte[length];
 		is.read(b, offset, length);
+		frameNum++;
 		return b;
 	}
 	
-	public byte[] getNextFrame() {
-		return null;
-	}
 	
 	public static void main(String[] args) throws IOException{
-		File file = new File("c:\\video.mpg");
+		File file = new File("a.mpg");
 		Demultiplexer d = new Demultiplexer(file);
-		byte b[] = d.readBytes(0, packetSize);
+		byte b[] = d.getNextFrame(frameNum*packetSize, packetSize);
+		
 	}
 	
 }
