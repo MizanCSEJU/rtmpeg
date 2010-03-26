@@ -8,3 +8,9 @@ http://java.sun.com/docs/books/tutorial/networking/sockets/index.html
 http://sourceforge.net/apps/mediawiki/flazr/index.php?title=Main_Page
 http://www.youtube.com/watch?v=S6DzgaMb0q0
 http://www.youtube.com/watch?v=Wa2bDQLKf8s
+
+http://code.google.com/p/tsdemuxer/downloads/list -> download the file tsdemuxer_setup.exe
+this contains an implementation of the demux,
+it converts the Transport Streams to PES streams.
+
+http://en.wikipedia.org/wiki/Packetized_Elementary_Stream
