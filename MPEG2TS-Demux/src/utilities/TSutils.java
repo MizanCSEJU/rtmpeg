@@ -1,16 +1,15 @@
 
 package utilities;
 
-import java.io.BufferedInputStream;
-import java.io.DataInputStream;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 
 public class TSutils {
 	
 
-	
+	//added from Mpeg2TSParser.cpp -> changed PByte to byte[]
+	public static int getPID(byte[] buffer) {
+		int pid = ((buffer[1] & 0x1f) << 8) + buffer[2];
+		return pid;
+	}	
 	
 
 	public static boolean isAdaptationFieldExist(byte[] tsPacket) {
