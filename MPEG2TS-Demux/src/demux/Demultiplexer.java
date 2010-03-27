@@ -52,7 +52,6 @@ public class Demultiplexer {
 
 		for (int i = 0; i < file.length() / packetSize; i++) {
 			b = demux.getNextTSPacket();
-			System.out.println(TSutils.getPID(b));
 			if (TSutils.getPID(b) == pidH264)
 				counter++;
 		}
