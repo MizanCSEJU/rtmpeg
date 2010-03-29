@@ -33,7 +33,6 @@ public class Demultiplexer {
 	private long noOfPacketsInFile;
 	private long frameNo;
 	private long offset;
-	private long timeStamp;
 	private List<Frame> frameBuffer;
 
 	private void fillBuffer() throws IOException {
@@ -52,7 +51,6 @@ public class Demultiplexer {
 		bufferPointer = 0;
 		frameNo = 0;
 		offset = 0;
-		timeStamp = 0;
 		frameBuffer = new LinkedList<Frame>();
 		fillFramesBuffer();
 
@@ -151,9 +149,8 @@ public class Demultiplexer {
 				frame[j] = b[i];
 			j += b.length;
 		}
-		Frame f = new Frame(frame, offset, frame.length, timeStamp);
+		Frame f = new Frame(frame, offset, frame.length, TSutils.getDTS(frame));
 		offset += frame.length;
-		timeStamp++;
 		frameNo++;
 		return f;
 	}
