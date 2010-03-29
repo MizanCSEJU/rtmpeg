@@ -99,8 +99,21 @@ public class TSutils {
 				+ ((tsPacket[offset+4] & 0x80) >>  7);				
 	}
 
-	
-	
+	public static int getPayloadOffset(byte[] tsPacket) {
+		int internalOffset = tsDataOffset(tsPacket);
 
+		if(isStartOfPES(tsPacket)) {
+			int PES_header_data_length = tsPacket[internalOffset + 8];
+			internalOffset = (internalOffset + 9 + PES_header_data_length);
+		}
+
+		return internalOffset;
+	}	
+
+	
+	
+	public static boolean payloadExists(byte[] tsPacket){
+		return (tsPacket[3] & 0x10) != 0;
+	}
 	
 }
