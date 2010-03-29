@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import utilities.TSutils;
@@ -25,6 +26,7 @@ public class Demultiplexer {
 	private static int packetNum = 0;
 	private int packetBufferNum = 0;
 	private final static int bufferSize = 10;
+	private final static int frameBufferSize = 100;
 	private byte[][] buffer = new byte[bufferSize][packetSize];
 	private int bufferPointer;
 	private InputStream is;
@@ -32,6 +34,7 @@ public class Demultiplexer {
 	private long frameNo;
 	private long offset;
 	private long timeStamp;
+	private List<Frame> frameBuffer;
 
 	private void fillBuffer() throws IOException {
 		for (int i = 0; i < buffer.length && packetNum + 1 < noOfPacketsInFile; i++) {
@@ -50,6 +53,19 @@ public class Demultiplexer {
 		frameNo = 0;
 		offset = 0;
 		timeStamp = 0;
+		frameBuffer = new LinkedList<Frame>();
+		fillFramesBuffer();
+
+	}
+	
+	private void fillFramesBuffer() throws IOException{
+		
+		for (int i = frameBuffer.size() ; i < frameBufferSize; i++) {
+			Frame f = getNextFrame();
+			if (f == null)
+				break;
+			frameBuffer.add(f);
+		}
 	}
 
 	private byte[] getNextTSPacket() throws IOException {
@@ -61,8 +77,22 @@ public class Demultiplexer {
 
 		return b;
 	}
+	
+	public Frame getNext() throws IOException{
+		if (frameBuffer.size()==0)
+			fillFramesBuffer();
+		
+		if (frameBuffer.size()==0)
+			return null;
+		
+		Frame f = frameBuffer.get(0);
+		frameBuffer.remove(0);
+		
+		return f;
+	}
+	
 
-	public Frame getNextFrame() throws IOException {
+	private Frame getNextFrame() throws IOException {
 
 		List<byte[]> arrayList = new ArrayList<byte[]>();
 
@@ -99,7 +129,8 @@ public class Demultiplexer {
 
 			if (!TSutils.isStartOfPES(buffer[bufferPointer])) {
 				byte[] payload = getPayload(buffer[bufferPointer]);
-				arrayList.add(payload);
+				if (payload != null)
+					arrayList.add(payload);
 			} else {
 				break;
 			}
@@ -136,15 +167,15 @@ public class Demultiplexer {
 		File file = new File("video.mpg");
 		Demultiplexer demux = new Demultiplexer(file);
 		int counter2 = 0;
-		while (demux.getNextFrame() != null)
+		while (demux.getNext() != null)
 			counter2++;
-		System.out.println("No of PES packets produced "+counter2);
+		System.out.println("No of PES packets produced " + counter2);
 
 		int counter = 0;
 		int pesCounter = 0;
-		System.out.println("The length of the file in bytes: "+file.length());
+		System.out.println("The length of the file in bytes: " + file.length());
 		demux = new Demultiplexer(file);
-		byte [] b=null;
+		byte[] b = null;
 		for (int i = 0; i < file.length() / packetSize; i++) {
 			b = demux.getNextTSPacket();
 			if (TSutils.isStartOfPES(b) && TSutils.getPID(b) == pidH264)
