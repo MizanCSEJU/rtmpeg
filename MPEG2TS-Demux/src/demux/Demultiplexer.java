@@ -22,7 +22,7 @@ import utilities.TSutils;
 public class Demultiplexer {
 
 	private final static int packetSize = 188;
-	private final static int pidH264 = 68;
+	private final static int H264PID = 68;
 	private static int packetNum = 0;
 	private int packetBufferNum = 0;
 	private final static int bufferSize = 10;
@@ -103,7 +103,7 @@ public class Demultiplexer {
 			if (bufferPointer == buffer.length)
 				fillBuffer();
 
-			if (TSutils.getPID(buffer[bufferPointer]) != pidH264) {
+			if (TSutils.getPID(buffer[bufferPointer]) != H264PID) {
 				continue;
 			}
 
@@ -121,7 +121,7 @@ public class Demultiplexer {
 			if (bufferPointer == buffer.length)
 				fillBuffer();
 
-			if (TSutils.getPID(buffer[bufferPointer]) != pidH264) {
+			if (TSutils.getPID(buffer[bufferPointer]) != H264PID) {
 				continue;
 			}
 
@@ -155,10 +155,21 @@ public class Demultiplexer {
 		return f;
 	}
 
-	private byte[] getPayload(byte[] bs) {
-		// TODO Auto-generated method stub
-		return new byte[100];
+	private byte[] getPayload(byte[] tsPacket) {
+
+		if (!TSutils.payloadExists(tsPacket)){
+			return null;
+		}
+		
+		int payloadOffset = TSutils.getPayloadOffset(tsPacket);
+		int payloadLength = packetSize-payloadOffset;
+		byte[] payload = new byte[payloadLength];
+		for(int i=0;i<payloadLength;i++)
+			payload[i]=tsPacket[payloadOffset+i];
+	
+		return payload;
 	}
+
 
 	public static void main(String[] args) throws IOException {
 		File file = new File("video.mpg");
@@ -175,14 +186,14 @@ public class Demultiplexer {
 		byte[] b = null;
 		for (int i = 0; i < file.length() / packetSize; i++) {
 			b = demux.getNextTSPacket();
-			if (TSutils.isStartOfPES(b) && TSutils.getPID(b) == pidH264)
+			if (TSutils.isStartOfPES(b) && TSutils.getPID(b) == H264PID)
 				pesCounter++;
-			if (TSutils.getPID(b) == pidH264)
+			if (TSutils.getPID(b) == H264PID)
 				counter++;
 		}
 		System.out.println("No of PES packets: " + pesCounter);
 		System.out.println("No of frames read: " + packetNum);
-		System.out.println("No of frames with PID = " + pidH264 + " is: "
+		System.out.println("No of frames with PID = " + H264PID + " is: "
 				+ counter);
 	}
 
