@@ -23,10 +23,11 @@ public class Demultiplexer {
 
 	private final static int packetSize = 188;
 	private final static int H264PID = 68;
+	private final static int ptsTimeResolution = 90000;
+	private final static int bufferSize = 100;
+	private final static int frameBufferSize = 100;
 	private static int packetNum = 0;
 	private int packetBufferNum = 0;
-	private final static int bufferSize = 10;
-	private final static int frameBufferSize = 100;
 	private byte[][] buffer = new byte[bufferSize][packetSize];
 	private int bufferPointer;
 	private InputStream is;
@@ -55,10 +56,10 @@ public class Demultiplexer {
 		fillFramesBuffer();
 
 	}
-	
-	private void fillFramesBuffer() throws IOException{
-		
-		for (int i = frameBuffer.size() ; i < frameBufferSize; i++) {
+
+	private void fillFramesBuffer() throws IOException {
+
+		for (int i = frameBuffer.size(); i < frameBufferSize; i++) {
 			Frame f = getNextFrame();
 			if (f == null)
 				break;
@@ -75,20 +76,19 @@ public class Demultiplexer {
 
 		return b;
 	}
-	
-	public Frame getNext() throws IOException{
-		if (frameBuffer.size()==0)
+
+	public Frame getNext() throws IOException {
+		if (frameBuffer.size() == 0)
 			fillFramesBuffer();
-		
-		if (frameBuffer.size()==0)
+
+		if (frameBuffer.size() == 0)
 			return null;
-		
+
 		Frame f = frameBuffer.get(0);
 		frameBuffer.remove(0);
-		
+
 		return f;
 	}
-	
 
 	private Frame getNextFrame() throws IOException {
 
@@ -149,7 +149,10 @@ public class Demultiplexer {
 				frame[j] = b[i];
 			j += b.length;
 		}
-		Frame f = new Frame(frame, offset, frame.length, TSutils.getDTS(frame));
+
+		Frame f = new Frame(frame, offset, frame.length, TSutils.getDTS(frame)
+				/ ptsTimeResolution);
+
 		offset += frame.length;
 		frameNo++;
 		return f;
@@ -157,19 +160,18 @@ public class Demultiplexer {
 
 	private byte[] getPayload(byte[] tsPacket) {
 
-		if (!TSutils.payloadExists(tsPacket)){
+		if (!TSutils.payloadExists(tsPacket)) {
 			return null;
 		}
-		
+
 		int payloadOffset = TSutils.getPayloadOffset(tsPacket);
-		int payloadLength = packetSize-payloadOffset;
+		int payloadLength = packetSize - payloadOffset;
 		byte[] payload = new byte[payloadLength];
-		for(int i=0;i<payloadLength;i++)
-			payload[i]=tsPacket[payloadOffset+i];
-	
+		for (int i = 0; i < payloadLength; i++)
+			payload[i] = tsPacket[payloadOffset + i];
+
 		return payload;
 	}
-
 
 	public static void main(String[] args) throws IOException {
 		File file = new File("video.mpg");
