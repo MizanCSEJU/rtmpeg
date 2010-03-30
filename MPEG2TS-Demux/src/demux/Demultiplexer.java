@@ -25,7 +25,7 @@ public class Demultiplexer {
 	private final static int H264PID = 68;
 	private final static int ptsTimeResolution = 90000;
 	private final static int bufferSize = 100;
-	private final static int frameBufferSize = 100;
+	private final static int frameCacheSize = 100;
 	private static int packetNum = 0;
 	private int packetBufferNum = 0;
 	private byte[][] buffer = new byte[bufferSize][packetSize];
@@ -34,8 +34,15 @@ public class Demultiplexer {
 	private long noOfPacketsInFile;
 	private long frameNo;
 	private long offset;
-	private List<Frame> frameBuffer;
+	private List<Frame> frameCache;
 
+	/**
+	 * Fills a window of TS packets in buffer. each packet is a 188 bytes TS
+	 * packet the size of the window that is filled is ptsTimeResolution. The
+	 * packets are taken from the input file.
+	 * 
+	 * @throws IOException
+	 */
 	private void fillBuffer() throws IOException {
 		for (int i = 0; i < buffer.length && packetNum + 1 < noOfPacketsInFile; i++) {
 			buffer[i] = getNextTSPacket();
@@ -45,6 +52,16 @@ public class Demultiplexer {
 		bufferPointer = 0;
 	}
 
+	/**
+	 * Inits the demux, calculates no. of TS packets in file, also fills the
+	 * buffer with TS packets - using fillBuffer. And calculates several frame
+	 * packets - a kind of caching, using fillFramesBuffer
+	 * 
+	 * @see fillFramesCache
+	 * @see fillBuffer
+	 * @param file
+	 * @throws IOException
+	 */
 	public Demultiplexer(File file) throws IOException {
 		is = new FileInputStream(file);
 		noOfPacketsInFile = (file.length() / packetSize);
@@ -52,21 +69,34 @@ public class Demultiplexer {
 		bufferPointer = 0;
 		frameNo = 0;
 		offset = 0;
-		frameBuffer = new LinkedList<Frame>();
-		fillFramesBuffer();
+		frameCache = new LinkedList<Frame>();
+		fillFramesCache();
 
 	}
 
-	private void fillFramesBuffer() throws IOException {
+	/**
+	 * A cache of the final frames needed. After the method is called, up to
+	 * frameCacheSize frames will be ready in the cache.
+	 * 
+	 * @see frameCacheSize
+	 * @throws IOException
+	 */
+	private void fillFramesCache() throws IOException {
 
-		for (int i = frameBuffer.size(); i < frameBufferSize; i++) {
+		for (int i = frameCache.size(); i < frameCacheSize; i++) {
 			Frame f = getNextFrame();
 			if (f == null)
 				break;
-			frameBuffer.add(f);
+			frameCache.add(f);
 		}
 	}
 
+	/**
+	 * Reads a TS packet from the stream, and returns it.
+	 * 
+	 * @return TS packet (a 188 byte array)
+	 * @throws IOException
+	 */
 	private byte[] getNextTSPacket() throws IOException {
 
 		byte b[] = new byte[packetSize];
@@ -77,19 +107,37 @@ public class Demultiplexer {
 		return b;
 	}
 
+	/**
+	 * Reads the next frame from the cache, and in case the cache is empty, it
+	 * fills the cache and brings the next frame.
+	 * 
+	 * @return next frame which contains payloads of TS packets until
+	 *         (excluding) a packet that contains a PES, also other fields are
+	 *         included.
+	 * @see Frame
+	 * @throws IOException
+	 */
 	public Frame getNext() throws IOException {
-		if (frameBuffer.size() == 0)
-			fillFramesBuffer();
+		if (frameCache.size() == 0)
+			fillFramesCache();
 
-		if (frameBuffer.size() == 0)
+		if (frameCache.size() == 0)
 			return null;
 
-		Frame f = frameBuffer.get(0);
-		frameBuffer.remove(0);
+		Frame f = frameCache.get(0);
+		frameCache.remove(0);
 
 		return f;
 	}
 
+	/**
+	 * From a series of TS packets we produce a Frame, linking all bytes of payloads of the TS frames needed.
+	 * @return next frame which contains payloads of TS packets until
+	 *         (excluding) a packet that contains a PES, also other fields are
+	 *         included.
+	 * @see Frame
+	 * @throws IOException
+	 */
 	private Frame getNextFrame() throws IOException {
 
 		List<byte[]> arrayList = new ArrayList<byte[]>();
@@ -158,6 +206,11 @@ public class Demultiplexer {
 		return f;
 	}
 
+	/**
+	 * Given a TS packet it returns the payload of that packet.
+	 * @param tsPacket
+	 * @return Payload of the TS packet.
+	 */
 	private byte[] getPayload(byte[] tsPacket) {
 
 		if (!TSutils.payloadExists(tsPacket)) {
