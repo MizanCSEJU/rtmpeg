@@ -1,11 +1,8 @@
 package rtmp;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
@@ -37,6 +34,7 @@ public class Server {
 		
 		int c0 = in.read();
 		System.out.println("C0 read");
+		System.out.println("C0 = "+c0);
 		int s0 = 3;
 		out.write(s0);
 		System.out.println("S0 was sent");
@@ -44,6 +42,7 @@ public class Server {
 
 		byte[] c1 = new byte[1536];
 		in.read(c1);
+		
 		
 		System.out.println("C1 read");
 
@@ -61,6 +60,12 @@ public class Server {
 	
 		byte[] c2 = new byte[1536];
 		in.read(c2);
+		
+		for (int i=0 ; i<4 ;i++){
+			if (c2[i]!=s1[i])
+				System.out.println("failed");
+		}
+		
 		System.out.println("C2 read");
 
 		byte[] s2 = new byte[1536];
@@ -76,10 +81,6 @@ public class Server {
 
 		System.out.println("S2 was sent");
 		
-		for (int i=0 ;i<100 ; i++){
-			System.out.println("No:"+i+" Data: "+in.read());
-		}
-
 		out.close();
 		in.close();
 		clientSocket.close();
