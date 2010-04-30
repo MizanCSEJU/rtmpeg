@@ -2,7 +2,6 @@ package rtmp;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -36,144 +35,132 @@ public class Server {
 		InputStream in = clientSocket.getInputStream();
 		InputStream fileIn = new FileInputStream(file);
 		byte[] arrIn = new byte[3073];
-	//	arrIn[0]=3;
-	//	for (int i=1 ; i< arrIn.length ; i++)
-	//		arrIn[i]=0xf;
+		// arrIn[0]=3;
+		// for (int i=1 ; i< arrIn.length ; i++)
+		// arrIn[i]=0xf;
 		fileIn.read(arrIn);
 		int c0 = in.read();
 		System.out.println("C0 read");
-		System.out.println("C0 = "+c0);
+		System.out.println("C0 = " + c0);
 		int s0 = 3;
-		//out.write(s0);
+		// out.write(s0);
 		System.out.println("S0 was sent");
 		Random randomizer = new Random();
 
 		byte[] c1 = new byte[1537];
 		in.read(c1);
-		
-		
+
 		System.out.println("C1 read");
 		out.write(arrIn);
-		
-		//byte[] s1 = new byte[1536];
-		
-	/*	randomizer.nextBytes(s1);
-		for (int i = 0; i < 4; i++)
-			s1[i] = c1[i];
-		for (int i = 4; i < 8; i++)
-			s1[i] = 0;*/
 
-		//out.write(s1);
-		//System.out.println("S1 was sent");
-	
+		// byte[] s1 = new byte[1536];
+
+		/*
+		 * randomizer.nextBytes(s1); for (int i = 0; i < 4; i++) s1[i] = c1[i];
+		 * for (int i = 4; i < 8; i++) s1[i] = 0;
+		 */
+
+		// out.write(s1);
+		// System.out.println("S1 was sent");
+
 		byte[] c2 = new byte[1536];
 		in.read(c2);
-		
-		/*for (int i=0 ; i<4 ;i++){
-			if (c2[i]!=s1[i])
-				System.out.println("failed");
-		}
-		*/
+
+		/*
+		 * for (int i=0 ; i<4 ;i++){ if (c2[i]!=s1[i])
+		 * System.out.println("failed"); }
+		 */
 		System.out.println("C2 read");
-/*
-		byte[] s2 = new byte[1536];
+		/*
+		 * byte[] s2 = new byte[1536];
+		 * 
+		 * for (int i = 0; i < 4; i++) s2[i] = c1[i]; for (int i = 4; i < 8;
+		 * i++) s2[i] = s1[i]; for (int i = 8; i < s2.length; i++) s2[i] =
+		 * c1[i];
+		 */
 
-		for (int i = 0; i < 4; i++)
-			s2[i] = c1[i];
-		for (int i = 4; i < 8; i++)
-			s2[i] = s1[i];
-		for (int i = 8; i < s2.length; i++)
-			s2[i] = c1[i];*/
+		// out.write(s2);
 
-		//out.write(s2);
-		
-//	System.out.println("S2 was sent");
+		// System.out.println("S2 was sent");
 		System.out.println(in.available());
-		
-			byte [] arr = new byte[in.available()];
-			//Byte x = new Byte((byte) in.read());
-			
-			
-			in.read(arr);
-			for (int i=0 ; i<arr.length ; i++){
-				Integer h = ((arr[i] & 0xf0) >> 4);
-				Integer l = (arr[i] & 0x0f);
-				System.out.print(Integer.toHexString(h) + Integer.toHexString(l));
-			}
-				
-			
-			File f = new File("bw_ping_invoke.dat");
-			byte [] bwPingInvoke = new byte[(int) f.length()];
-			InputStream bw_ping_invoke = new FileInputStream(f);
-			bw_ping_invoke.read(bwPingInvoke);
-			
-			out.write(bwPingInvoke);
-			
-			f = new File("invoke.dat");
-			byte [] invokePayload = new byte[(int) f.length()];
-			InputStream invokeStream = new FileInputStream(f);
-			invokeStream.read(invokePayload);
-			
-			out.write(invokePayload);
-			
-			while (in.available()==0){
-				System.out.println("waiting...");
-			}
-			
-			System.out.println("\nAvailable: "+in.available());
-			arr = new byte[in.available()];
-						
-			in.read(arr);
-			System.out.println("\nServer BW: ");
-			for (int i=0 ; i<arr.length ; i++){
-				Integer h = ((arr[i] & 0xf0) >> 4);
-				Integer l = (arr[i] & 0x0f);
-				System.out.print(Integer.toHexString(h) + Integer.toHexString(l));
-			}
-			
-			System.out.println("");
-			while (in.available()==0){
-				System.out.println("waiting...");
-			}
-			
-			System.out.println("\nAvailable: "+in.available());
-			arr = new byte[in.available()];
-			
-			/*
-			 * It seems that we need to change the client code in flash,
-			 * at this stage the server expects 
-			 *
-			System.out.println("\nInvoke BW: ");
-			for (int i=0 ; i<arr.length ; i++){
-				Integer h = ((arr[i] & 0xf0) >> 4);
-				Integer l = (arr[i] & 0x0f);
-				System.out.print(Integer.toHexString(h) + Integer.toHexString(l));
-			}*/
-			
-			f = new File("audio1.dat");
-			byte [] audioPayload = new byte[(int) f.length()];
-			InputStream invoke = new FileInputStream(f);
-			invoke.read(audioPayload);
-			
-			out.write(audioPayload);
-			
-			while (in.available()==0){
-				System.out.println("waiting...");
-			}
-			
-			System.out.println("\nAvailable: "+in.available());
-			arr = new byte[in.available()];
-			
 
-			System.out.println("\nInvoke ?? BW: ");
-			for (int i=0 ; i<arr.length ; i++){
-				Integer h = ((arr[i] & 0xf0) >> 4);
-				Integer l = (arr[i] & 0x0f);
-				System.out.print(Integer.toHexString(h) + Integer.toHexString(l));
-			}
-			
-			
-			
+		byte[] arr = new byte[in.available()];
+		// Byte x = new Byte((byte) in.read());
+
+		in.read(arr);
+		for (int i = 0; i < arr.length; i++) {
+			Integer h = ((arr[i] & 0xf0) >> 4);
+			Integer l = (arr[i] & 0x0f);
+			System.out.print(Integer.toHexString(h) + Integer.toHexString(l));
+		}
+		System.out.println(new String(arr));
+
+		File f = new File("bw_ping_invoke.dat");
+		byte[] bwPingInvoke = new byte[(int) f.length()];
+		InputStream bw_ping_invoke = new FileInputStream(f);
+		bw_ping_invoke.read(bwPingInvoke);
+
+		out.write(bwPingInvoke);
+
+		System.out.println("\nwaiting...");
+		while (in.available() == 0) {
+		}
+
+		arr = new byte[in.available()];
+
+		in.read(arr);
+
+		System.out.println("\nClient response to bwPingInvoke: ");
+		for (int i = 0; i < arr.length; i++) {
+			Integer h = ((arr[i] & 0xf0) >> 4);
+			Integer l = (arr[i] & 0x0f);
+			System.out.print(Integer.toHexString(h) + Integer.toHexString(l));
+		}
+		System.out.println("\n"+new String(arr));
+
+		f = new File("invoke.dat");
+		byte[] invokePayload = new byte[(int) f.length()];
+		InputStream invokeStream = new FileInputStream(f);
+		invokeStream.read(invokePayload);
+
+		
+
+		System.out.println("\nwaiting...");
+		while (in.available() == 0) {
+		}
+
+		System.out.println("\nAvailable: " + in.available());
+		arr = new byte[in.available()];
+
+		in.read(arr);
+		System.out.println("\nCreate Stream command: ");
+		System.out.println(new String(arr));
+
+		// Should now send Command Message (_result - createStream response)
+		// page 25 in RTMP Commands Messages
+		//out.write(invokePayload);
+		
+		f = new File("cs_res.dat");
+		byte[] createStreamResponsePayload = new byte[(int) f.length()];
+		InputStream csResponsePayload = new FileInputStream(f);
+		csResponsePayload.read(createStreamResponsePayload);
+		
+		out.write(createStreamResponsePayload);
+		System.out.println("\nwaiting...");
+		while (in.available() == 0) {
+		}
+
+		System.out.println("\nAvailable: " + in.available());
+		arr = new byte[in.available()];
+
+
+		System.out.println("\nPlay command: \n"+new String());
+		for (int i = 0; i < arr.length; i++) {
+			Integer h = ((arr[i] & 0xf0) >> 4);
+			Integer l = (arr[i] & 0x0f);
+			System.out.print(Integer.toHexString(h) + Integer.toHexString(l));
+		}
+
 		out.close();
 		in.close();
 		clientSocket.close();
@@ -182,8 +169,6 @@ public class Server {
 
 	public static void main(String args[]) throws UnknownHostException,
 			IOException {
-		//Byte x = 0xf;
-		//System.out.println("0xf prints as: "+x);
 		new Server().run();
 	}
 
