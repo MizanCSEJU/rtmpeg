@@ -13,7 +13,7 @@ import java.util.Random;
 
 public class Server {
 
-	void handShake() throws UnknownHostException, IOException {
+	void run() throws UnknownHostException, IOException {
 		ServerSocket serverSocket = null;
 		try {
 			serverSocket = new ServerSocket(5080);
@@ -101,9 +101,79 @@ public class Server {
 				System.out.print(Integer.toHexString(h) + Integer.toHexString(l));
 			}
 				
-			//File f = new File("out.txt");
-			//OutputStream fileOut = new FileOutputStream(f);
-			//fileOut.write(arr);
+			
+			File f = new File("bw_ping_invoke.dat");
+			byte [] bwPingInvoke = new byte[(int) f.length()];
+			InputStream bw_ping_invoke = new FileInputStream(f);
+			bw_ping_invoke.read(bwPingInvoke);
+			
+			out.write(bwPingInvoke);
+			
+			f = new File("invoke.dat");
+			byte [] invokePayload = new byte[(int) f.length()];
+			InputStream invokeStream = new FileInputStream(f);
+			invokeStream.read(invokePayload);
+			
+			out.write(invokePayload);
+			
+			while (in.available()==0){
+				System.out.println("waiting...");
+			}
+			
+			System.out.println("\nAvailable: "+in.available());
+			arr = new byte[in.available()];
+						
+			in.read(arr);
+			System.out.println("\nServer BW: ");
+			for (int i=0 ; i<arr.length ; i++){
+				Integer h = ((arr[i] & 0xf0) >> 4);
+				Integer l = (arr[i] & 0x0f);
+				System.out.print(Integer.toHexString(h) + Integer.toHexString(l));
+			}
+			
+			System.out.println("");
+			while (in.available()==0){
+				System.out.println("waiting...");
+			}
+			
+			System.out.println("\nAvailable: "+in.available());
+			arr = new byte[in.available()];
+			
+			/*
+			 * It seems that we need to change the client code in flash,
+			 * at this stage the server expects 
+			 *
+			System.out.println("\nInvoke BW: ");
+			for (int i=0 ; i<arr.length ; i++){
+				Integer h = ((arr[i] & 0xf0) >> 4);
+				Integer l = (arr[i] & 0x0f);
+				System.out.print(Integer.toHexString(h) + Integer.toHexString(l));
+			}*/
+			
+			f = new File("audio1.dat");
+			byte [] audioPayload = new byte[(int) f.length()];
+			InputStream invoke = new FileInputStream(f);
+			invoke.read(audioPayload);
+			
+			out.write(audioPayload);
+			
+			while (in.available()==0){
+				System.out.println("waiting...");
+			}
+			
+			System.out.println("\nAvailable: "+in.available());
+			arr = new byte[in.available()];
+			
+
+			System.out.println("\nInvoke ?? BW: ");
+			for (int i=0 ; i<arr.length ; i++){
+				Integer h = ((arr[i] & 0xf0) >> 4);
+				Integer l = (arr[i] & 0x0f);
+				System.out.print(Integer.toHexString(h) + Integer.toHexString(l));
+			}
+			
+			
+			
 		out.close();
 		in.close();
 		clientSocket.close();
@@ -114,7 +184,7 @@ public class Server {
 			IOException {
 		//Byte x = 0xf;
 		//System.out.println("0xf prints as: "+x);
-		new Server().handShake();
+		new Server().run();
 	}
 
 }
