@@ -152,15 +152,47 @@ public class Server {
 
 		System.out.println("\nAvailable: " + in.available());
 		arr = new byte[in.available()];
+		in.read(arr);
 
-
-		System.out.println("\nPlay command: \n"+new String());
+		System.out.println("\nPlay command: \n"+new String(arr));
 		for (int i = 0; i < arr.length; i++) {
 			Integer h = ((arr[i] & 0xf0) >> 4);
 			Integer l = (arr[i] & 0x0f);
 			System.out.print(Integer.toHexString(h) + Integer.toHexString(l));
 		}
-
+		
+		
+		byte [] serverBw = {0x02,0x0,0x0,0x0,0x0,0x0,0x04,0x05,0x0,0x0,0x0,0x0,0x0,0x2,0x0,0x0};
+		byte [] ping = {0x42,0x0,0x0,0x0,0x0,0x0,0x06,0x04,0x0,0x0,0x0,0x0,0x0,0x0};
+		System.out.println("\nPing: "+new String(ping));
+		f = new File("invoke2.dat");
+		byte[] invoke = new byte[(int) f.length()];
+		InputStream is = new FileInputStream(f);
+		
+		is.read(invoke);
+		out.write(serverBw);
+		out.write(ping);
+		out.write(invoke);
+		f = new File("invoke4.dat");
+		invoke = new byte[(int) f.length()];
+		is.read(invoke);
+		out.write(invoke);
+		
+		
+		System.out.println("\nwaiting...");
+		while (in.available() == 0) {
+		}
+		System.out.println("\nAvailable: " + in.available());
+		arr = new byte[in.available()];
+		in.read(arr);
+		System.out.println("\nClient reply to serverBw: \n"+new String(arr));
+		for (int i = 0; i < arr.length; i++) {
+			Integer h = ((arr[i] & 0xf0) >> 4);
+			Integer l = (arr[i] & 0x0f);
+			System.out.print(Integer.toHexString(h) + Integer.toHexString(l));
+		}
+		
+		
 		out.close();
 		in.close();
 		clientSocket.close();
