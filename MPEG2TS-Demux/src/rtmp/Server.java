@@ -62,18 +62,9 @@ public class Server {
 		Utils.printStream(arr);
 		
 		out.write(Utils.readFile("invoke_1.dat"));
-		out.write(Utils.readFile("invoke_1.dat"));
-
 		out.write(Utils.readFile("server_bw_1.dat"));
-		out.write(Utils.readFile("server_bw_1.dat"));
-
 		out.write(Utils.readFile("ping_1.dat"));
-		out.write(Utils.readFile("ping_1.dat"));
-
 		out.write(Utils.readFile("invoke_2.dat"));
-		out.write(Utils.readFile("invoke_2.dat"));
-		out.write(Utils.readFile("invoke_3.dat"));
-
 		
 		System.out.println("\nwaiting 1...");
 		
@@ -86,9 +77,13 @@ public class Server {
 		System.out.println("\nClient response to bwPingInvoke: ");
 		Utils.printStream(arr);
 		
-		out.write(Utils.readFile("invoke_4"));		
-		out.write(Utils.readFile("audio_1"));	
-		
+		out.write(Utils.readFile("invoke_1.dat"));
+
+		out.write(Utils.readFile("server_bw_1.dat"));
+
+		out.write(Utils.readFile("ping_1.dat"));
+
+		out.write(Utils.readFile("invoke_2.dat"));
 		System.out.println("\nwaiting 2...");
 		
 		Utils.waitForStream(in);
@@ -99,11 +94,11 @@ public class Server {
 		System.out.println("\nClient response to second invoke: ");
 		Utils.printStream(arr);
 		
-	
-		out.write(Utils.readFile("notify_1"));
-		out.write(Utils.readFile("ping_2"));
-		out.write(Utils.readFile("ping_2"));
-		out.write(Utils.readFile("invoke_5"));
+		out.write(Utils.readFile("invoke_3.dat"));
+	//	out.write(Utils.readFile("notify_1"));
+		//out.write(Utils.readFile("ping_2"));
+	//	out.write(Utils.readFile("ping_2"));
+	//	out.write(Utils.readFile("invoke_5"));
 		//out.write(Utils.readFile("video_1"));
 	
 
