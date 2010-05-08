@@ -1,14 +1,11 @@
 package rtmp;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.Random;
 
 import utilities.Utils;
 
@@ -39,51 +36,43 @@ public class Server {
 		int c0 = in.read();
 		System.out.println("C0 read");
 		System.out.println("C0 = " + c0);
-		
-		System.out.println("S0 was sent");
-		//Random randomizer = new Random();
 
-		byte[] c1 = new byte[1537];
+		byte[] c1 = new byte[in.available()];
 		in.read(c1);
 
-		System.out.println("C1 read");
+		System.out.println("C1 read: "+c1.length+" bytes.");
 		out.write(Utils.readFile("handshake.dat"));
-
-		byte[] c2 = new byte[1536];
+		Utils.waitForStream(in);
+		
+		byte[] c2 = new byte[in.available()];
 		System.out.println("No of bytes in c2:"+in.read(c2));
 
 		System.out.println("C2 read");
-		
-		System.out.println(in.available());
-
-		byte[] arr = new byte[in.available()];
-
-		in.read(arr);
-		Utils.printStream(arr);
+		Utils.printStream(c2);
 		
 		out.write(Utils.readFile("invoke_1.dat"));
 		out.write(Utils.readFile("server_bw_1.dat"));
 		out.write(Utils.readFile("ping_1.dat"));
 		out.write(Utils.readFile("invoke_2.dat"));
+
 		
 		System.out.println("\nwaiting 1...");
 		
 		Utils.waitForStream(in);
 		
-		arr = new byte[in.available()];
+		byte[] arr = new byte[in.available()];
 		in.read(arr);
 
 		
 		System.out.println("\nClient response to bwPingInvoke: ");
 		Utils.printStream(arr);
-		
+		out.write(Utils.readFile("invoke_3.dat"));
 		out.write(Utils.readFile("invoke_1.dat"));
 
-		out.write(Utils.readFile("server_bw_1.dat"));
+		//out.write(Utils.readFile("server_bw_1.dat"));
+	//	out.write(Utils.readFile("ping_1.dat"));
 
-		out.write(Utils.readFile("ping_1.dat"));
-
-		out.write(Utils.readFile("invoke_2.dat"));
+	//	out.write(Utils.readFile("invoke_2.dat"));
 		System.out.println("\nwaiting 2...");
 		
 		Utils.waitForStream(in);
