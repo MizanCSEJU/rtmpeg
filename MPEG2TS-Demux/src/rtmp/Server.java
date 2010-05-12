@@ -94,7 +94,7 @@ public class Server {
 		System.out.println("\nwaiting 3...");
 
 		for (int i = 1; i <= 100; i++)
-			out.write(Utils.readFile(Integer.toString(i)));
+			out.write(Utils.readFile("video+audio/"+i));
 
 		Utils.waitForStream(in);
 
