@@ -16,16 +16,24 @@ import utilities.Utils;
 public class Server {
 	
 	private final int port = 1935;
-
-	void run() throws UnknownHostException, IOException, InterruptedException {
-		ServerSocket serverSocket = null;
+	private final int socketRetryTime = 1000; // msec
+	private ServerSocket serverSocket = null;
+	
+	public Server() throws InterruptedException, UnknownHostException, IOException {
+		init();
+	}
+	
+	private void init() throws InterruptedException{
 		try {
 			serverSocket = new ServerSocket(port);
 		} catch (IOException e) {
-			System.err.println("Could not listen on port: "+port);
-			System.exit(1);
+			System.err.println("Could not listen on port: "+port+"\nTrying again in: "+(float)socketRetryTime/1000+" sec.");
+			Thread.sleep(socketRetryTime);
+			init();
 		}
-
+	}
+	
+	void run() throws UnknownHostException, IOException, InterruptedException {
 		Socket clientSocket = null;
 		try {
 			System.out.println("Listening...");
@@ -109,7 +117,12 @@ public class Server {
 				break;
 			byte [] data = utilities.Serializer.createAMFVideoData(f.getFrame(),(int)f.getTimeStamp());
 			System.out.println("Sending chunk: "+(i++)+" Size is: "+(data.length));
+			try {
 			out.write(data);
+			}
+			catch (Exception e){
+				return;
+			}
 			Thread.sleep(1);			
 			// Listening for client (for responses).
 			byte[] arr = new byte[in.available()];
@@ -126,7 +139,15 @@ public class Server {
 
 	public static void main(String args[]) throws UnknownHostException,
 			IOException, InterruptedException {
-		new Server().run();
+		Server server = new Server();
+		while (true){
+			try{
+		server.run();
+			}
+			catch (Exception e){
+				server.run();
+			}
+		}
 	}
 
 }
