@@ -69,7 +69,7 @@ public class Demultiplexer {
 		bufferPointer = 0;
 		frameNo = 0;
 		offset = 0;
-		frameCache = new LinkedList<Frame>();
+		frameCache = new ArrayList<Frame>();
 		fillFramesCache();
 
 	}
@@ -146,7 +146,7 @@ public class Demultiplexer {
 
 		if (packetNum >= noOfPacketsInFile)
 			return null;
-
+		long timestamp = 0;
 		// The first loop for finding the start of a PES
 		for (; packetNum < noOfPacketsInFile; packetNum++, bufferPointer++) {
 
@@ -158,6 +158,7 @@ public class Demultiplexer {
 			}
 
 			if (TSutils.isStartOfPES(buffer[bufferPointer])) {
+				timestamp = TSutils.getDTS(buffer[bufferPointer]);
 				byte[] payload = getPayload(buffer[bufferPointer]);
 				arrayList.add(payload);
 				packetNum++;
@@ -200,7 +201,7 @@ public class Demultiplexer {
 		}
 
 		Frame f = new Frame(frame, offset, frame.length,
-				(TSutils.getDTS(frame) * (long) (1000))
+				(timestamp * (long) (1000))
 						/ ((long) (ptsTimeResolution)));
 		offset += frame.length;
 		frameNo++;
@@ -232,9 +233,21 @@ public class Demultiplexer {
 		File file = new File("video.mpg");
 		Demultiplexer demux = new Demultiplexer(file);
 		Frame f = demux.getNext();
+		int i=0;
 		do {
-			System.out.println(f.getTimeStamp());
+			System.out.println("Frame :"+(i++)+" timestamp: "+f.getTimeStamp());
 		}while ((f=demux.getNext())!=null);
+		
+		//demux = new Demultiplexer(file);
+		
+		/*
+		byte[] b = null;
+		for (int i = 0; i < file.length() / packetSize; i++) {
+			b = demux.getNextTSPacket();
+			if (TSutils.isStartOfPES(b))
+			System.out.println(TSutils.getDTS(b));
+		}*/
+
 		
 		/*
 		int counter2 = 0;
