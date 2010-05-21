@@ -9,6 +9,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import utilities.TSutils;
+import utilities.Utils;
 
 /**
  * 
@@ -194,13 +195,11 @@ public class Demultiplexer {
 		int j = 0;
 		for (byte[] b : arrayList) {
 			for (int i = 0; i < b.length; i++)
-				frame[j] = b[i];
-			j += b.length;
+				frame[j++] = b[i];
 		}
 
 		Frame f = new Frame(frame, offset, frame.length, TSutils.getDTS(frame)
 				/ ptsTimeResolution);
-
 		offset += frame.length;
 		frameNo++;
 		return f;
