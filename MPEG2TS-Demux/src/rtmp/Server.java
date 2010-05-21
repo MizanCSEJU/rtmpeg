@@ -14,13 +14,15 @@ import demux.Frame;
 import utilities.Utils;
 
 public class Server {
+	
+	private final int port = 1935;
 
 	void run() throws UnknownHostException, IOException, InterruptedException {
 		ServerSocket serverSocket = null;
 		try {
-			serverSocket = new ServerSocket(5080);
+			serverSocket = new ServerSocket(port);
 		} catch (IOException e) {
-			System.err.println("Could not listen on port: 5080.");
+			System.err.println("Could not listen on port: "+port);
 			System.exit(1);
 		}
 
@@ -103,10 +105,12 @@ public class Server {
 		
 		do {
 			f = demux.getNext();
+			if (f==null)
+				break;
 			byte [] data = utilities.Serializer.createAMFVideoData(f.getFrame(),(int)f.getTimeStamp());
 			System.out.println("Sending chunk: "+(i++)+" Size is: "+(data.length));
 			out.write(data);
-			Thread.sleep(10);			
+			Thread.sleep(1);			
 			// Listening for client (for responses).
 			byte[] arr = new byte[in.available()];
 			in.read(arr);
