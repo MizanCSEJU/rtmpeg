@@ -117,8 +117,10 @@ public class Server {
 			f = demux.getNext();
 			if (f == null)
 				break;
+			
 			byte[] data = utilities.Serializer.createAMFVideoData(f.getFrame(),
 					(int) f.getTimeStamp());
+			
 			System.out.println("Sending chunk: " + (i++) + " Size is: "
 					+ (data.length)+" Timestamp="+f.getTimeStamp());
 			try {
@@ -126,7 +128,7 @@ public class Server {
 			} catch (Exception e) {
 				return;
 			}
-			Thread.sleep(1);
+			Thread.sleep(10);
 			// Listening for client (for responses).
 			byte[] arr = new byte[in.available()];
 			in.read(arr);
