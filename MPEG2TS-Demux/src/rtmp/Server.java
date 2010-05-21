@@ -14,7 +14,7 @@ import demux.Frame;
 import utilities.Utils;
 
 public class Server {
-
+	
 	private final int port = 1935;
 	private final int socketRetryTime = 1000; // msec
 	private ServerSocket serverSocket = null;
@@ -120,7 +120,7 @@ public class Server {
 			byte[] data = utilities.Serializer.createAMFVideoData(f.getFrame(),
 					(int) f.getTimeStamp());
 			System.out.println("Sending chunk: " + (i++) + " Size is: "
-					+ (data.length));
+					+ (data.length)+" Timestamp="+f.getTimeStamp());
 			try {
 				out.write(data);
 			} catch (Exception e) {

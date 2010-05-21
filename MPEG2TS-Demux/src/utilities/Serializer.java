@@ -13,7 +13,7 @@ public class Serializer {
 		byte [] message = new byte[payload.length+headerSize];
 		byte [] payloadLength = Utils.intToByteArray(payload.length); //TODO if payload size is bigger than 3 bytes
 		byte [] timeStamp = Utils.intToByteArray(timestamp);
-		message[0] = 0x47;
+		message[0] = 0x45;
 		message[7] = videoData;
 		
 		for (int i=1 ; i<4 ; i++)

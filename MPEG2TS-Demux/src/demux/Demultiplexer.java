@@ -131,7 +131,9 @@ public class Demultiplexer {
 	}
 
 	/**
-	 * From a series of TS packets we produce a Frame, linking all bytes of payloads of the TS frames needed.
+	 * From a series of TS packets we produce a Frame, linking all bytes of
+	 * payloads of the TS frames needed.
+	 * 
 	 * @return next frame which contains payloads of TS packets until
 	 *         (excluding) a packet that contains a PES, also other fields are
 	 *         included.
@@ -197,8 +199,9 @@ public class Demultiplexer {
 				frame[j++] = b[i];
 		}
 
-		Frame f = new Frame(frame, offset, frame.length, TSutils.getDTS(frame)
-				/ ptsTimeResolution);
+		Frame f = new Frame(frame, offset, frame.length,
+				(TSutils.getDTS(frame) * (long) (1000))
+						/ ((long) (ptsTimeResolution)));
 		offset += frame.length;
 		frameNo++;
 		return f;
@@ -206,6 +209,7 @@ public class Demultiplexer {
 
 	/**
 	 * Given a TS packet it returns the payload of that packet.
+	 * 
 	 * @param tsPacket
 	 * @return Payload of the TS packet.
 	 */
@@ -227,6 +231,12 @@ public class Demultiplexer {
 	public static void main(String[] args) throws IOException {
 		File file = new File("video.mpg");
 		Demultiplexer demux = new Demultiplexer(file);
+		Frame f = demux.getNext();
+		do {
+			System.out.println(f.getTimeStamp());
+		}while ((f=demux.getNext())!=null);
+		
+		/*
 		int counter2 = 0;
 		while (demux.getNext() != null)
 			counter2++;
@@ -248,6 +258,7 @@ public class Demultiplexer {
 		System.out.println("No of frames read: " + packetNum);
 		System.out.println("No of frames with PID = " + H264PID + " is: "
 				+ counter);
+		*/
 	}
 
 }
