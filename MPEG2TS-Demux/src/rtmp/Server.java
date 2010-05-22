@@ -49,16 +49,21 @@ public class Server {
 		OutputStream out = clientSocket.getOutputStream();
 		InputStream in = clientSocket.getInputStream();
 
-		int c0 = in.read();
-		System.out.println("C0 read");
-		System.out.println("C0 = " + c0);
+		//int c0 = in.read();
+		//System.out.println("C0 read");
+		//System.out.println("C0 = " + c0);
 
-		byte[] c1 = new byte[in.available()];
-		in.read(c1);
-		Utils.printStream(c1);
-		System.out.println("C1 read: " + c1.length + " bytes.");
-		out.write(Utils.readFile("wowoza/hs"));
-		System.out.println("Handshake sent");
+	//	byte[] c0c1 = new byte[in.available()];
+		//in.read(c0c1);
+		//Utils.printStream(c0c1);
+		//System.out.println("c0c1 read: " + c0c1.length + " bytes.");
+		
+		RTMPHandshake hs = new RTMPHandshake();
+		byte [] handshake = hs.generateResponse(in);
+		
+		out.write(handshake);
+		//out.write(Utils.readFile("wowoza/hs"));
+		System.out.println("Handshake sent"+" size = "+handshake.length);
 
 		Utils.waitForStream(in);
 		byte[] c2 = new byte[1536];
@@ -79,6 +84,7 @@ public class Server {
 			byte[] arr = new byte[in.available()];
 			in.read(arr);
 			Utils.printStream(arr);
+			System.out.println(arr.length + " bytes were read");
 			String msg = new String(arr);
 
 			if (msg.indexOf("connect") > 0) {
@@ -120,6 +126,7 @@ public class Server {
 			
 			byte[] data = utilities.Serializer.createAMFVideoData(f.getFrame(),
 					(int) f.getTimeStamp());
+			
 			
 			System.out.println("Sending chunk: " + (i++) + " Size is: "
 					+ (data.length)+" Timestamp="+f.getTimeStamp());
