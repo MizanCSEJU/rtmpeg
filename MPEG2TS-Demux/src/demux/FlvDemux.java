@@ -32,9 +32,10 @@ public class FlvDemux {
 		System.out.println("Flags = " + flags);
 
 		char[] headerLength = new char[4];
-		for (int i=0 ; i<headerLength.length ; i++)
+		for (int i = 0; i < headerLength.length; i++)
 			headerLength[i] = (char) is.read();
-		System.out.println("Header Length = " + byteArrayToInt(headerLength,0));
+		System.out
+				.println("Header Length = " + byteArrayToInt(headerLength, 0));
 
 		// End of header
 
@@ -67,7 +68,7 @@ public class FlvDemux {
 		}
 
 		char[] dataSize = new char[3];
-		for (int i=0 ; i<dataSize.length ; i++)
+		for (int i = 0; i < dataSize.length; i++)
 			dataSize[i] = (char) is.read();
 		char[] tmp3 = new char[4];
 		System.arraycopy(dataSize, 0, tmp3, 1, 3);
@@ -75,12 +76,12 @@ public class FlvDemux {
 		System.out.println("Data size = " + dataSizeInt + " bytes");
 
 		char[] timestamp = new char[3];
-		for (int i=0 ; i<timestamp.length ; i++)
+		for (int i = 0; i < timestamp.length; i++)
 			timestamp[i] = (char) is.read();
-		
-		char [] tmp = new char[4];
+
+		char[] tmp = new char[4];
 		System.arraycopy(timestamp, 0, tmp, 1, 3);
-		
+
 		int timeStamp = byteArrayToInt(tmp, 0);
 		System.out.println("timestamp = " + timeStamp + " milliseconds");
 
@@ -90,9 +91,9 @@ public class FlvDemux {
 
 		char[] streamID = new char[3];
 		char[] tmp2 = new char[4];
-		
+
 		System.arraycopy(streamID, 0, tmp2, 1, 3);
-		for (int i=0 ; i<streamID.length ; i++)
+		for (int i = 0; i < streamID.length; i++)
 			streamID[i] = (char) is.read();
 		int id = byteArrayToInt(tmp2, 0);
 		System.out.println("Stream ID = " + id);
@@ -123,50 +124,61 @@ public class FlvDemux {
 		return value;
 	}
 
-	public FLVTag getNextVideoTag() throws IOException {
+	public FLVTag getNextTag() throws IOException {
+		FLVTag tag = processFLVTag();
+		if (!readPrevTag())
+			return null;
+		return tag;
+	}
 
+	private boolean readPrevTag() throws IOException {
+		if (is.available() < 1)
+			return false;
+		char[] prevTagSize = new char[4];
+		for (int i = 0; i < prevTagSize.length; i++)
+			prevTagSize[i] = (char) is.read();
+		System.out.println("prevTagSize = " + byteArrayToInt(prevTagSize, 0));
+		return true;
+	}
+
+	public FLVTag getNextVideoTag() throws IOException {
 		FLVTag tag = processFLVTag();
 		if (tag.tagType == 9) {
-			char[] prevTagSize = new char[4];
-			for (int i=0 ; i<prevTagSize.length ; i++)
-				prevTagSize[i] = (char) is.read();
-			System.out.println("prevTagSize = "
-					+ byteArrayToInt(prevTagSize, 0));
+			if (!readPrevTag())
+				return null;
 			return tag;
 		}
 
 		else {
-			char[] prevTagSize = new char[4];
-			for (int i=0 ; i<prevTagSize.length ; i++)
-				prevTagSize[i] = (char) is.read();
-			System.out.println("prevTagSize = "
-					+ byteArrayToInt(prevTagSize, 0));
+			if (!readPrevTag())
+				return null;
 			return getNextVideoTag();
 		}
 
 	}
 
-	public static void main(String[] args) throws IOException, InterruptedException {
+	public static void main(String[] args) throws IOException,
+			InterruptedException {
 		char[] tmp = new char[4];
 		tmp[2] = 0x01;
 		tmp[3] = 0x2C;
 		System.out.println(byteArrayToInt(tmp, 0));
 		File file = new File("sample.flv");
 		FlvDemux demux = new FlvDemux(file);
-		
-		int i=0;
-		//while (true){
-		//	System.out.println("\n\n\n\nTag number "+i);
+
+		int i = 0;
+		// while (true){
+		// System.out.println("\n\n\n\nTag number "+i);
 		FLVTag tag = demux.getNextVideoTag();
 		System.out.println("$$$$$$$$$$ Fesh Euro 3ashan");
 
-		for (; i<8 ; i++)
+		for (; i < 8; i++)
 			System.out.println(tag.data[i]);
-		//	Thread.sleep(1000);
-		//	i++;
-		//}
-		
-		//System.out.println(tag.data[i]);
-		
+		// Thread.sleep(1000);
+		// i++;
+		// }
+
+		// System.out.println(tag.data[i]);
+
 	}
 }
