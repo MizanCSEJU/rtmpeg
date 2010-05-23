@@ -9,6 +9,8 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 
 import demux.Demultiplexer;
+import demux.FLVTag;
+import demux.FlvDemux;
 import demux.Frame;
 
 import utilities.Utils;
@@ -43,6 +45,7 @@ public class Server {
 			clientSocket = serverSocket.accept();
 			System.out.println("Connection made !");
 		} catch (IOException e) {
+			e.printStackTrace();
 			System.err.println("Accept failed.");
 			System.exit(1);
 		}
@@ -71,8 +74,8 @@ public class Server {
 		System.out.println("C2 read");
 		Utils.printStream(c2);
 
-		out.write(Utils.readFile("wowoza/server_bw"));
-		out.write(Utils.readFile("wowoza/client_bw"));
+		out.write(Utils.readFile("wowoza/server_bw")); //  first stream id
+		out.write(Utils.readFile("wowoza/client_bw")); // first stream id
 		out.write(Utils.readFile("wowoza/ping1"));
 		out.write(Utils.readFile("wowoza/chunk_size"));
 
@@ -89,13 +92,14 @@ public class Server {
 
 			if (msg.indexOf("connect") > 0) {
 				System.out.println("on connect");
-				out.write(Utils.readFile("wowoza/invoke1"));
+				out.write(Utils.readFile("wowoza/invoke1")); // first stream id
+															// 
 
 			}
 
 			if (msg.indexOf("createStream") > 0) {
 				System.out.println("on createStream");
-				out.write(Utils.readFile("wowoza/result"));
+				out.write(Utils.readFile("wowoza/result")); // should be new stream id
 			}
 			if (msg.indexOf("play") > 0) {
 				System.out.println("on play");
@@ -114,25 +118,30 @@ public class Server {
 
 		}
 		File file = new File("video.mpg");
+		File flvFile = new File("sample.flv");
 		Demultiplexer demux = new Demultiplexer(file);
 
+		FlvDemux dem = new FlvDemux(flvFile);
 		i = 0;
 		Frame f = null;
-
+		FLVTag tag= null;
 		do {
-			f = demux.getNext();
-			if (f == null)
-				break;
+			tag = dem.getNextVideoTag();
+			//f = demux.getNext();
+			//if (f == null)
+			//	break;
 			
-			byte[] data = utilities.Serializer.createAMFVideoData(f.getFrame(),
-					(int) f.getTimeStamp());
+			//byte[] data = utilities.Serializer.createAMFVideoData(tag.getData(),
+			//		tag.getTimeStamp());
 			
+			byte [] data = utilities.Serializer.rtmpVideoMessage(tag.getData(), tag.getTimeStamp());
 			
 			System.out.println("Sending chunk: " + (i++) + " Size is: "
-					+ (data.length)+" Timestamp="+f.getTimeStamp());
+					+ (data.length)+" Timestamp="+tag.getTimeStamp());
 			try {
 				out.write(data);
 			} catch (Exception e) {
+				e.printStackTrace();
 				return;
 			}
 			Thread.sleep(10);
@@ -140,7 +149,7 @@ public class Server {
 			byte[] arr = new byte[in.available()];
 			in.read(arr);
 			Utils.printStream(arr);
-		} while (f != null);
+		} while (tag != null);
 
 		out.close();
 		in.close();
@@ -155,6 +164,7 @@ public class Server {
 			try {
 				server.run();
 			} catch (Exception e) {
+				e.printStackTrace();
 				server.run();
 			}
 		}
