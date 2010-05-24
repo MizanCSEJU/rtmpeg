@@ -2,7 +2,7 @@ package rtmp.chunking;
 
 
 public class ControlMessages {
-	private static final int messageStreamID = 0;
+	private static final int messageStreamID = 1; // was 0
 	private static final int chunkStreamID = 2;
 	private static final byte SET_CHUNK_SIZE = 1;
 	private static final byte ABORT_MESSAGE = 2;
@@ -13,7 +13,9 @@ public class ControlMessages {
 	
 	public static final int STREAM_BEGIN = 0;
 	public static final int STREAM_EOF = 1;
+	public static final int STREAM_IS_RECORDED = 4;
 	public static final int PING_REQUEST =6;
+	
 
 
 	
@@ -54,19 +56,19 @@ public class ControlMessages {
 	
 	public static byte [] peerBW(int ackWindow,int timestamp) throws ChunkException, UnsupportedFeature{
 		
-		byte [] chunk = ChunkCreator.createChunk(chunkStreamID, 0, timestamp, 4, SET_PEER_BW, messageStreamID);
+		byte [] chunk = ChunkCreator.createChunk(chunkStreamID, 0, timestamp, 5, SET_PEER_BW, messageStreamID);
 		byte [] payload = utilities.Utils.intToByteArray(ackWindow);
 		byte [] data = new byte[chunk.length + payload.length+1];
 		System.arraycopy(chunk, 0, data, 0, chunk.length);
 		System.arraycopy(payload, 0, data, chunk.length, payload.length);
-		data[data.length-1] = 2;
+		data[data.length-1] = 0;
 		return data;
 	}
 	
 	public static byte [] userControlMessage(int timestamp,byte [] eventData,int event) throws ChunkException, UnsupportedFeature{
 		
 		byte [] eventArray = utilities.Utils.intToByteArray(event);
-		byte [] chunk = ChunkCreator.createChunk(chunkStreamID, 0, timestamp, 4, USER_CONTROL_MESSAGE, messageStreamID);
+		byte [] chunk = ChunkCreator.createChunk(chunkStreamID, 0, timestamp, 2+eventData.length, USER_CONTROL_MESSAGE, messageStreamID);
 		byte [] data = new byte[chunk.length + eventData.length +2];
 		System.arraycopy(chunk, 0, data, 0, chunk.length);
 		System.arraycopy(eventArray, 2, data, chunk.length, 2);
