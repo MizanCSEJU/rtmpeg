@@ -21,6 +21,7 @@ import utilities.Utils;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Random;
 public class Server {
 	
 	private final int port = 1935;
@@ -71,10 +72,21 @@ public class Server {
 		System.out.println("c1 read: " + c1.length + " bytes.");
 		
 		//RTMPHandshake hs = new RTMPHandshake();
-		//byte [] handshake = hs.generateResponse(in);
+		out.write(3);
+		byte [] s1 = new byte[1536];//hs.generateResponse(in);
+		Random randomizer = new Random();
+		randomizer.nextBytes(s1);
+		for (int i=0 ; i<8 ; i++)
+			s1[i] = 0;
 		
-		//out.write(handshake);
-		out.write(Utils.readFile("wowoza/hs"));
+		out.write(s1);
+		
+		byte [] s2 = c1;
+		for (int i=4 ; i<8 ; i++)
+			s2[i] = 0;
+		
+		out.write(s2);
+		//out.write(Utils.readFile("wowoza/hs"));
 		//System.out.println("Handshake sent"+" size = "+handshake.length);
 
 		Utils.waitForStream(in);
