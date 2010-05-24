@@ -82,10 +82,11 @@ public class FlvCreator {
 		creator.writeHeader(false, true);
 		creator.writePrevTagSize();
 
-		File file = new File("sample.flv");
-		FlvDemux demux = new FlvDemux(file);
+		FlvDemux demux = new FlvDemux("sample.flv");
 		FLVTag tag = demux.getNextTag();
 
+		
+	
 		while (tag != null) {
 
 			creator.writeFlvTag((byte) tag.getTagType(), tag.getDataSize(), tag

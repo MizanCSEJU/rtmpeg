@@ -4,10 +4,14 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 
+import utilities.Utils;
+
 public class FlvDemux {
 	private FileInputStream is;
-
-	public FlvDemux(File file) throws IOException {
+	File file = null;
+	
+	public FlvDemux(String filename) throws IOException {
+		file = new File(filename);
 		is = new FileInputStream(file);
 		readHeader();
 	}
@@ -163,17 +167,15 @@ public class FlvDemux {
 		tmp[2] = 0x01;
 		tmp[3] = 0x2C;
 		System.out.println(byteArrayToInt(tmp, 0));
-		File file = new File("sample.flv");
-		FlvDemux demux = new FlvDemux(file);
-
+		FlvDemux demux = new FlvDemux("sample.flv");
+		
 		int i = 0;
-		// while (true){
-		// System.out.println("\n\n\n\nTag number "+i);
 		FLVTag tag = demux.getNextVideoTag();
-		System.out.println("$$$$$$$$$$ Fesh Euro 3ashan");
-
-		for (; i < 8; i++)
-			System.out.println(tag.data[i]);
+		Utils.printStream(tag.getData());
+		//while (tag!=null){
+		// System.out.println("\n\n\n\nTag number "+i)
+		//tag = demux.getNextVideoTag();
+		//}
 		// Thread.sleep(1000);
 		// i++;
 		// }
