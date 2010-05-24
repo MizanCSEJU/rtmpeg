@@ -8,6 +8,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
+import rtmp.chunking.ChunkCreator;
 import rtmp.chunking.ChunkException;
 import rtmp.chunking.ControlMessages;
 import rtmp.chunking.UnsupportedFeature;
@@ -28,7 +29,7 @@ public class Server {
 	private final int socketRetryTime = 1000; // msec
 	private ServerSocket serverSocket = null;
 	private int timestamp = 0;
-	private int streamID = 1;
+	private int streamID = 0;
 	private int recordedStream = 101;
 
 	public Server() throws InterruptedException, UnknownHostException,
@@ -108,9 +109,13 @@ public class Server {
 		String msg = new String(arr);
 		System.out.println("### CONNECT MESSAGE END ###");
 
-		
-		byte [] windowMessage = ControlMessages.peerBW(64000, timestamp);
-		//Utils.printStream(windowMessage);
+		System.out.println("Sending Window Ack");
+		byte [] windowAck = ControlMessages.windowAck(2500000, timestamp);
+		Utils.printStream(windowAck);
+		out.write(windowAck);
+		System.out.println("SENDING SET PEER BW");
+		byte [] windowMessage = ControlMessages.peerBW(2500000, timestamp);
+		Utils.printStream(windowMessage);
 		out.write(windowMessage);
 	//	out.write(ControlMessages.peerBW(20000, timestamp++));
 		//out.write(ControlMessages.userControlMessage(timestamp, Utils.intToByteArray(timestamp), ControlMessages.PING_REQUEST));
@@ -152,13 +157,32 @@ public class Server {
 			out.write(userControlMessage);
 			System.out.println(" ##### END OF SENDING USER CONTROL MESSAGE - STREAM BEGIN #####\n\n\n");
 			
+			System.out.println("\n\n ##### SENDING SET CHUNK SIZE #####");
+			byte [] setChunkSize = ControlMessages.setChunkSize(65536, timestamp);
+			Utils.printStream(setChunkSize);
+			out.write(setChunkSize);
+			System.out.println(" ##### END OF SET CHUNK SIZE #####\n\n\n");
+			
+			
 			System.out.println(" ##### SENDING RESULT MESSAGE #####");
-			byte [] resultMessage = Utils.readFile("objects/result");
-			Utils.printStream(resultMessage);
-			out.write(resultMessage);
-			System.out.println(" ##### END OF RESULT MESSAGE #####");
-
+			//byte [] resultMessage = Utils.readFile("objects/result");
+			//Utils.printStream(resultMessage);
+			//out.write(ControlMessages.userControlMessage(0, Utils.intToByteArray(0), ControlMessages.PING_REQUEST));
+			//out.write(resultMessage);
 			//out.write(Utils.readFile("wowoza/invoke1"));
+			out.write(Utils.readFile("wowoza/invoke1"));
+			System.out.println(" ##### END OF RESULT MESSAGE #####");
+			
+			System.out.println("\nwaiting ...");
+			Utils.waitForStream(in);
+			arr = new byte[in.available()];
+			in.read(arr);
+			Utils.printStream(arr);
+			System.out.println(arr.length + " bytes were read");
+			msg = new String(arr);
+			
+			out.write(Utils.readFile("wowoza/result"));
+			
 			
 			
 	//		out.write(ControlMessages.userControlMessage(timestamp, Utils.intToByteArray(timestamp), ControlMessages.PING_REQUEST));
@@ -178,24 +202,20 @@ public class Server {
 			
 			out.write(Utils.readFile("objects/result2"));
 
-			System.out.println("\nwaiting ...");
+			/*System.out.println("\nwaiting ...");
 			Utils.waitForStream(in);
 			arr = new byte[in.available()];
 			in.read(arr);
 			Utils.printStream(arr);
 			System.out.println(arr.length + " bytes were read");
-			msg = new String(arr);
-			
-			
-			byte [] setChunkSize = ControlMessages.setChunkSize(65536,timestamp);
-			Utils.printStream(setChunkSize);
-			out.write(setChunkSize);
-			
+			msg = new String(arr); */
+			/*
+			System.out.println("Sending Stream is recorded");
 			byte [] streamIsRecorded = ControlMessages.userControlMessage(timestamp, Utils.intToByteArray(recordedStream), ControlMessages.STREAM_IS_RECORDED);
 			Utils.printStream(streamIsRecorded);
 			out.write(streamIsRecorded);
 						
-			out.write(Utils.readFile("objects/reset_start"));
+			//out.write(Utils.readFile("objects/reset_start"));
 			
 			System.out.println("\nwaiting ...");
 			Utils.waitForStream(in);
@@ -210,8 +230,8 @@ public class Server {
 			if (msg.indexOf("createStream") > 0) {
 				System.out.println("on createStream");
 				out.write(Utils.readFile("wowoza/result")); // should be new stream id
-			}
-			if (msg.indexOf("play") > 0) {
+			}*/
+			//if (msg.indexOf("play") > 0) {
 				System.out.println("on play");
 				out.write(Utils.readFile("wowoza/invoke2"));
 				out.write(Utils.readFile("wowoza/ping1"));
@@ -222,34 +242,33 @@ public class Server {
 				arr = new byte[in.available()];
 				in.read(arr);
 			Utils.printStream(arr);
-*/
+
 			//	break;
 			//}
 
 		//}
-		File file = new File("video.mpg");
-		File flvFile = new File("sample.flv");
-		Demultiplexer demux = new Demultiplexer(file);
 
-		FlvDemux dem = new FlvDemux(flvFile);
+		FlvDemux dem = new FlvDemux("sample.flv");
 		int i = 0;
 		Frame f = null;
-		FLVTag tag= null;
+		FLVTag tag= dem.getNextTag();
 		do {
-			tag = dem.getNextTag();
 			//f = demux.getNext();
 			//if (f == null)
 			//	break;
 			
-			byte[] data = utilities.Serializer.createAMFVideoData(tag.getData(),
-					tag.getTimeStamp());
+			//byte[] data = utilities.Serializer.createAMFVideoData(tag.getData(),
+			//		tag.getTimeStamp());
 			
 			//byte [] data = utilities.Serializer.rtmpVideoMessage(tag.getData(), tag.getTimeStamp());
 			
-			System.out.println("Sending chunk: " + (i++) + " Size is: "
-					+ (data.length)+" Timestamp="+tag.getTimeStamp());
+			//System.out.println("Sending chunk: " + (i++) + " Size is: "
+			//		+ (data.length)+" Timestamp="+tag.getTimeStamp());
+			
+			byte [] chunk = ChunkCreator.createChunk(3, 0, 0, tag.getDataSize(), (byte)0x9, 0);
 			try {
-				out.write(data);
+				out.write(chunk);
+				out.write(tag.getData());
 			} catch (Exception e) {
 				e.printStackTrace();
 				return;
@@ -259,6 +278,7 @@ public class Server {
 			arr = new byte[in.available()];
 			in.read(arr);
 			Utils.printStream(arr);
+			tag= dem.getNextTag();
 		} while (tag != null);
 
 		out.close();
