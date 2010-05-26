@@ -187,13 +187,6 @@ public class Server {
 			System.out.println("\n\n<<< play message End <<<");
 			
 			
-			
-			System.out.println("\n\n>>> SENDING onStatus1 >>>");
-			byte [] onStatus = Utils.readFile("objects/onstatus1");
-			Utils.printStream(onStatus);
-			out.write(onStatus);
-			System.out.println(">>> END OF onStatus1 >>>");
-			
 			System.out.println("\n\n>>> SENDING stream is recorded >>>");
 			byte [] streamRecorded = ControlMessages.userControlMessage(timestamp, Utils.intToByteArray(createStreamID), ControlMessages.STREAM_IS_RECORDED);
 			Utils.printStream(streamRecorded);
@@ -206,12 +199,21 @@ public class Server {
 			out.write(streamBegin);
 			System.out.println(">>> END SENDING stream is begin >>>");
 			
+			
+			System.out.println("\n\n>>> SENDING onStatus1 >>>");
+			byte [] onStatus = Utils.readFile("objects/onstatus1");
+			Utils.printStream(onStatus);
+			out.write(onStatus);
+			System.out.println(">>> END OF onStatus1 >>>");
+			
+			
+			
 			System.out.println("\n\n>>> SENDING onStatus2 >>>");
 			byte [] onStatus2 = Utils.readFile("objects/onstatus2");
 			Utils.printStream(onStatus2);
 			out.write(onStatus2);
 			System.out.println(">>> END OF onStatus2 >>>");
-			
+			/*
 			System.out.println("\n\n>>> SENDING RTMP SAMPLE ACCESS >>>");
 			byte [] sampleAccess = Utils.readFile("wowoza/notify");
 			Utils.printStream(sampleAccess);
@@ -264,7 +266,7 @@ public class Server {
 				arr = new byte[in.available()];
 				in.read(arr);
 			Utils.printStream(arr);
-
+	*/
 			//	break;
 			//}
 
@@ -286,11 +288,12 @@ public class Server {
 			
 			//System.out.println("Sending chunk: " + (i++) + " Size is: "
 			//		+ (data.length)+" Timestamp="+tag.getTimeStamp());
-			
-			byte [] chunk = ChunkCreator.createChunk(5, 0, 0, tag.getDataSize(), (byte)0x9, 1);
+			byte [] chunk = utilities.Serializer.rtmpVideoMessage(tag.getData(), tag.getTimeStamp(), createStreamID);
+			byte [] header = ChunkCreator.createChunk(5, 0, timestamp, chunk.length, (byte)9, createStreamID);
+			//ChunkCreator.createChunk(5, 0, 0, tag.getDataSize(), (byte)0x9, 1);
 			try {
+				out.write(header);
 				out.write(chunk);
-				out.write(tag.getData());
 			} catch (Exception e) {
 				e.printStackTrace();
 				return;

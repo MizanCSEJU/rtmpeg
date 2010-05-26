@@ -30,16 +30,18 @@ public class Serializer {
 		return message;
 	}
 	
-	public static byte [] rtmpVideoMessage(byte[] payload,int timeStamp){
+	public static byte [] rtmpVideoMessage(byte[] payload,int timeStamp,int streamID){
 		byte [] message = new byte[payload.length+rtmpHeaderSize];
 		byte [] payloadLength = Utils.intToByteArray(payload.length);
 		byte [] timestamp = Utils.intToByteArray(timeStamp);
+		byte [] id = Utils.intToByteArray(streamID);
 		message[0] = 0x09;
 		for (int i=1 ; i<4 ; i++)
 			message[i]=payloadLength[i];
 		for (int i=4 ; i<8 ; i++)
 			message[i]=timestamp[i-4];
-		message[11] = 0x05;
+		for (int i=8 ; i<11 ; i++)
+			message[i]=id[i-7];
 		return message;
 	}
 	
