@@ -61,7 +61,7 @@ public class ControlMessages {
 		byte [] data = new byte[chunk.length + payload.length+1];
 		System.arraycopy(chunk, 0, data, 0, chunk.length);
 		System.arraycopy(payload, 0, data, chunk.length, payload.length);
-		data[data.length-1] = 0;
+		data[data.length-1] = 2;
 		return data;
 	}
 	

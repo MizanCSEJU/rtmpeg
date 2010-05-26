@@ -30,6 +30,7 @@ public class Server {
 	private ServerSocket serverSocket = null;
 	private int timestamp = 0;
 	private int streamID = 0;
+	private int createStreamID = 1;
 	private int recordedStream = 101;
 
 	public Server() throws InterruptedException, UnknownHostException,
@@ -103,77 +104,61 @@ public class Server {
 		Utils.waitForStream(in);
 		byte[] arr = new byte[in.available()];
 		in.read(arr);
-		System.out.println("### CONNECT MESSAGE START ###");
+		System.out.println("<<< CONNECT MESSAGE START <<<");
 		Utils.printStream(arr);
 		System.out.println(arr.length + " bytes were read");
 		String msg = new String(arr);
-		System.out.println("### CONNECT MESSAGE END ###");
+		System.out.println("<<< CONNECT MESSAGE END <<<");
 
-		System.out.println("Sending Window Ack");
+		System.out.println(">>> Sending Window Ack (SERVER BW) >>>");
 		byte [] windowAck = ControlMessages.windowAck(2500000, timestamp);
 		Utils.printStream(windowAck);
 		out.write(windowAck);
-		System.out.println("SENDING SET PEER BW");
+		System.out.println(">>> Sending Window Ack (SERVER BW) END >>>");
+		System.out.println(">>> SENDING SET PEER BW >>>");
 		byte [] windowMessage = ControlMessages.peerBW(2500000, timestamp);
 		Utils.printStream(windowMessage);
 		out.write(windowMessage);
-	//	out.write(ControlMessages.peerBW(20000, timestamp++));
-		//out.write(ControlMessages.userControlMessage(timestamp, Utils.intToByteArray(timestamp), ControlMessages.PING_REQUEST));
-	//	timestamp++;
-	//	out.write(ControlMessages.setChunkSize(65536,timestamp++));
+		System.out.println(">>> SENDING SET PEER BW END >>>");
 
-
-		//out.write(Utils.readFile("wowoza/server_bw")); //  first stream id
-		//out.write(Utils.readFile("wowoza/client_bw")); // first stream id
-		//out.write(Utils.readFile("wowoza/ping1"));
-		//out.write(Utils.readFile("wowoza/chunk_size"));
-
-	//	int i = 10;
-	//	while (i-- > 0) {
-		//	System.out.println("\nwaiting ..." + (10 - i));
-
-			
-			
-		//	if (msg.indexOf("connect") > 0) {
-		//		System.out.println("on connect");
-			//out.write(ControlMessages.userControlMessage(timestamp++, Utils.intToByteArray(streamID), ControlMessages.STREAM_BEGIN));
-				//out.write(ControlMessages.windowAck(20000, timestamp++));
-			//	out.write(ControlMessages.peerBW(20000, timestamp++));
-				//out.write(Utils.readFile("wowoza/invoke1")); // first stream id
-		//		out.write(Utils.readFile("objects/result")); // result
-		//	}
-			System.out.println(" ##### WINDOW ACK #####");
+		
+			System.out.println("<<< WINDOW ACK <<<");
 			Utils.waitForStream(in);
 			arr = new byte[in.available()];
 			in.read(arr);
 			Utils.printStream(arr);
 			System.out.println(arr.length + " bytes were read");
 			msg = new String(arr);
-			System.out.println(" ##### END OF ACK #####\n\n");
+			System.out.println("<<< WINDOW ACK <<<\n\n");
 			
-			System.out.println(" ##### SENDING USER CONTROL MESSAGE - STREAM BEGIN #####");
-			byte [] userControlMessage = ControlMessages.userControlMessage(timestamp, Utils.intToByteArray(streamID), ControlMessages.STREAM_BEGIN);
-			Utils.printStream(userControlMessage);
-			out.write(userControlMessage);
-			System.out.println(" ##### END OF SENDING USER CONTROL MESSAGE - STREAM BEGIN #####\n\n\n");
 			
-			System.out.println("\n\n ##### SENDING SET CHUNK SIZE #####");
+		
+			System.out.println(">>> SENDING STREAM BIGIN >>>"); // in the sniffer this message is identified by ping :P
+			byte [] ping = ControlMessages.userControlMessage(timestamp, Utils.intToByteArray(streamID) , ControlMessages.STREAM_BEGIN);
+			Utils.printStream(ping);
+			out.write(ping);
+			System.out.println(">>> SENDING STREAM BIGIN - END >>>");
+			
+			
+			System.out.println("\n\n>>> SENDING SET CHUNK SIZE >>>");
 			byte [] setChunkSize = ControlMessages.setChunkSize(65536, timestamp);
 			Utils.printStream(setChunkSize);
 			out.write(setChunkSize);
-			System.out.println(" ##### END OF SET CHUNK SIZE #####\n\n\n");
+			System.out.println(">>> END OF SET CHUNK SIZE >>>\n\n\n");
 			
 			
-			System.out.println(" ##### SENDING RESULT MESSAGE #####");
-			//byte [] resultMessage = Utils.readFile("objects/result");
-			//Utils.printStream(resultMessage);
-			//out.write(ControlMessages.userControlMessage(0, Utils.intToByteArray(0), ControlMessages.PING_REQUEST));
-			//out.write(resultMessage);
-			//out.write(Utils.readFile("wowoza/invoke1"));
-			out.write(Utils.readFile("wowoza/invoke1"));
-			System.out.println(" ##### END OF RESULT MESSAGE #####");
+			System.out.println(">>> SENDING _Result >>>");
+			byte [] result = Utils.readFile("wowoza/invoke1");
+			Utils.printStream(result);
+			out.write(result);
+			System.out.println(">>> END OF SENDING _Result >>>\n\n\n");
 			
-			System.out.println("\nwaiting ...");
+			
+			
+			
+		
+			
+			System.out.println("\n<<< createStream start <<<");
 			Utils.waitForStream(in);
 			arr = new byte[in.available()];
 			in.read(arr);
@@ -181,64 +166,101 @@ public class Server {
 			System.out.println(arr.length + " bytes were read");
 			msg = new String(arr);
 			
-			out.write(Utils.readFile("wowoza/result"));
+			System.out.println("<<< createStream End <<<");
 			
 			
-			
-	//		out.write(ControlMessages.userControlMessage(timestamp, Utils.intToByteArray(timestamp), ControlMessages.PING_REQUEST));
-		//	timestamp++;
-		//	out.write(ControlMessages.setChunkSize(65536,timestamp++));
-			
-			//out.write(ControlMessages.userControlMessage(timestamp++, Utils.intToByteArray(streamID), ControlMessages.STREAM_BEGIN));
-			//out.write(Utils.readFile("bw_ping_invoke.dat"));
-			
-			System.out.println("\nwaiting ...");
-			Utils.waitForStream(in);
-			arr = new byte[in.available()];
-			in.read(arr);
-			Utils.printStream(arr);
-			System.out.println(arr.length + " bytes were read");
-			msg = new String(arr);
-			
-			out.write(Utils.readFile("objects/result2"));
+			System.out.println("\n\n>>> SENDING RESULT MESSAGE >>>");
+			byte [] resultMessage = Utils.readFile("wowoza/result");
+			Utils.printStream(resultMessage);
+			out.write(resultMessage);
+			System.out.println(">>> END OF RESULT MESSAGE >>>");
 
-			/*System.out.println("\nwaiting ...");
-			Utils.waitForStream(in);
-			arr = new byte[in.available()];
-			in.read(arr);
-			Utils.printStream(arr);
-			System.out.println(arr.length + " bytes were read");
-			msg = new String(arr); */
-			/*
-			System.out.println("Sending Stream is recorded");
-			byte [] streamIsRecorded = ControlMessages.userControlMessage(timestamp, Utils.intToByteArray(recordedStream), ControlMessages.STREAM_IS_RECORDED);
-			Utils.printStream(streamIsRecorded);
-			out.write(streamIsRecorded);
-						
-			//out.write(Utils.readFile("objects/reset_start"));
 			
-			System.out.println("\nwaiting ...");
+			
+			System.out.println("\n\n<<< play message <<<");
 			Utils.waitForStream(in);
 			arr = new byte[in.available()];
 			in.read(arr);
 			Utils.printStream(arr);
 			System.out.println(arr.length + " bytes were read");
 			msg = new String(arr);
+			System.out.println("\n\n<<< play message End <<<");
 			
-			Thread.sleep(100000);
-/*
-			if (msg.indexOf("createStream") > 0) {
-				System.out.println("on createStream");
-				out.write(Utils.readFile("wowoza/result")); // should be new stream id
-			}*/
-			//if (msg.indexOf("play") > 0) {
-				System.out.println("on play");
-				out.write(Utils.readFile("wowoza/invoke2"));
-				out.write(Utils.readFile("wowoza/ping1"));
-				out.write(Utils.readFile("wowoza/ping1"));
-				out.write(Utils.readFile("wowoza/invoke3"));
-				out.write(Utils.readFile("wowoza/notify"));
-
+			
+			
+			System.out.println("\n\n>>> SENDING onStatus1 >>>");
+			byte [] onStatus = Utils.readFile("objects/onstatus1");
+			Utils.printStream(onStatus);
+			out.write(onStatus);
+			System.out.println(">>> END OF onStatus1 >>>");
+			
+			System.out.println("\n\n>>> SENDING stream is recorded >>>");
+			byte [] streamRecorded = ControlMessages.userControlMessage(timestamp, Utils.intToByteArray(createStreamID), ControlMessages.STREAM_IS_RECORDED);
+			Utils.printStream(streamRecorded);
+			out.write(streamRecorded);
+			System.out.println(">>> END SENDING stream is recorded >>>");
+			
+			System.out.println("\n\n>>> SENDING stream begin >>>");
+			byte [] streamBegin = ControlMessages.userControlMessage(timestamp, Utils.intToByteArray(createStreamID), ControlMessages.STREAM_BEGIN);
+			Utils.printStream(streamBegin);
+			out.write(streamBegin);
+			System.out.println(">>> END SENDING stream is begin >>>");
+			
+			System.out.println("\n\n>>> SENDING onStatus2 >>>");
+			byte [] onStatus2 = Utils.readFile("objects/onstatus2");
+			Utils.printStream(onStatus2);
+			out.write(onStatus2);
+			System.out.println(">>> END OF onStatus2 >>>");
+			
+			System.out.println("\n\n>>> SENDING RTMP SAMPLE ACCESS >>>");
+			byte [] sampleAccess = Utils.readFile("wowoza/notify");
+			Utils.printStream(sampleAccess);
+			out.write(sampleAccess);
+			System.out.println(">>> END RTMP SAMPLE ACCESS >>>");
+			
+			System.out.println("\n\n>>> SENDING OBJECT 8 >>>");
+			byte [] object8 = Utils.readFile("objects/objec8");
+			Utils.printStream(object8);
+			out.write(object8);
+			System.out.println(">>> END OBJECT 8 >>>");
+			
+			
+			System.out.println("\n\n>>> Sending onStatus 3 >>>");
+			byte [] onStatus3 = Utils.readFile("objects/onstatus3");
+			Utils.printStream(onStatus3);
+			out.write(onStatus3);
+			System.out.println(">>> END of onStatus 3 >>>");
+			
+			
+			System.out.println("\n\n>>> Sending onMetaData >>>");
+			byte [] onMetaData = Utils.readFile("objects/onmetadata");
+			Utils.printStream(onMetaData);
+			out.write(onMetaData);
+			System.out.println(">>> END of onMetaData >>>");
+			
+			System.out.println("\n\n>>> Sending xml >>>");
+			byte [] xml = Utils.readFile("objects/xml");
+			Utils.printStream(xml);
+			out.write(xml);
+			System.out.println(">>> END of xml >>>");
+			
+			System.out.println("\n\n>>> Sending 1 >>>");
+			byte [] byte1 = Utils.readFile("objects/1");
+			Utils.printStream(byte1);
+			out.write(byte1);
+			System.out.println(">>> END of 1 >>>");
+			
+			System.out.println("\n\n>>> Sending unkown >>>");
+			byte [] un = Utils.readFile("objects/unkown");
+			Utils.printStream(un);
+			out.write(un);
+			System.out.println(">>> END of unkown >>>");
+			out.write(Utils.readFile("objects/2"));
+			out.write(Utils.readFile("objects/3"));
+			out.write(Utils.readFile("objects/4"));
+			out.write(Utils.readFile("objects/5"));
+			out.write(Utils.readFile("objects/6"));
+			out.write(Utils.readFile("objects/7"));
 				arr = new byte[in.available()];
 				in.read(arr);
 			Utils.printStream(arr);
@@ -265,7 +287,7 @@ public class Server {
 			//System.out.println("Sending chunk: " + (i++) + " Size is: "
 			//		+ (data.length)+" Timestamp="+tag.getTimeStamp());
 			
-			byte [] chunk = ChunkCreator.createChunk(3, 0, 0, tag.getDataSize(), (byte)0x9, 0);
+			byte [] chunk = ChunkCreator.createChunk(5, 0, 0, tag.getDataSize(), (byte)0x9, 1);
 			try {
 				out.write(chunk);
 				out.write(tag.getData());
