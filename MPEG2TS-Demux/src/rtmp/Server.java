@@ -275,22 +275,21 @@ public class Server {
 		FlvDemux dem = new FlvDemux("sample.flv");
 		int i = 0;
 		Frame f = null;
-		FLVTag tag= dem.getNextTag();
+		FLVTag tag= dem.getNextVideoTag();
 		do {
 			//f = demux.getNext();
 			//if (f == null)
 			//	break;
 			
-			//byte[] data = utilities.Serializer.createAMFVideoData(tag.getData(),
-			//		tag.getTimeStamp());
+			byte[] data = utilities.Serializer.createAMFVideoData(tag.getData(),
+				tag.getTimeStamp());
 			
-			//byte [] data = utilities.Serializer.rtmpVideoMessage(tag.getData(), tag.getTimeStamp());
 			
 			//System.out.println("Sending chunk: " + (i++) + " Size is: "
 			//		+ (data.length)+" Timestamp="+tag.getTimeStamp());
 			byte [] chunk = utilities.Serializer.rtmpVideoMessage(tag.getData(), tag.getTimeStamp(), createStreamID);
 			byte [] header = ChunkCreator.createChunk(5, 0, timestamp, chunk.length, (byte)9, createStreamID);
-			//ChunkCreator.createChunk(5, 0, 0, tag.getDataSize(), (byte)0x9, 1);
+			//byte [] chunk = ChunkCreator.createChunk(5, 0, 0, tag.getDataSize(), (byte)0x9, 1);
 			try {
 				out.write(header);
 				out.write(chunk);
@@ -301,8 +300,12 @@ public class Server {
 			Thread.sleep(10);
 			// Listening for client (for responses).
 			arr = new byte[in.available()];
-			in.read(arr);
-			Utils.printStream(arr);
+			if (arr.length > 0){
+				in.read(arr);
+				Utils.printStream(arr);
+				Thread.sleep(5000);
+			}
+			
 			tag= dem.getNextTag();
 		} while (tag != null);
 
