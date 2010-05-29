@@ -23,14 +23,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class FileChannelReader implements BufferReader {
-
-    private static final Logger logger = LoggerFactory.getLogger(FileChannelReader.class);
 
     private final String absolutePath;
     private final FileChannel in;
@@ -48,7 +45,7 @@ public class FileChannelReader implements BufferReader {
         } catch(Exception e) {
             throw new RuntimeException(e);
         }
-        logger.info("opened file: {}", absolutePath);
+        //logger.info("opened file: {}", absolutePath);
     }
 
     @Override
@@ -106,9 +103,9 @@ public class FileChannelReader implements BufferReader {
         try {
             in.close();
         } catch(Exception e) {
-            logger.warn("error closing file {}: {}", absolutePath, e.getMessage());
+            //logger.warn("error closing file {}: {}", absolutePath, e.getMessage());
         }
-        logger.info("closed file: {}", absolutePath);
+      //  logger.info("closed file: {}", absolutePath);
     }
 
 }

@@ -39,14 +39,10 @@ import javax.crypto.spec.SecretKeySpec;
 
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import util.Utils;
 
 public class RtmpHandshake {
-
-    private static final Logger logger = LoggerFactory.getLogger(RtmpHandshake.class);
 
     public static final int HANDSHAKE_SIZE = 1536;
 
@@ -271,7 +267,7 @@ public class RtmpHandshake {
             cipherOut.init(Cipher.ENCRYPT_MODE, new SecretKeySpec(digestOut, 0, 16, "RC4"));
             cipherIn = Cipher.getInstance("RC4");
             cipherIn.init(Cipher.DECRYPT_MODE, new SecretKeySpec(digestIn, 0, 16, "RC4"));
-            logger.info("initialized encryption / decryption ciphers");
+           // logger.info("initialized encryption / decryption ciphers");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -303,12 +299,12 @@ public class RtmpHandshake {
         out.setInt(0, 0); // zeros
         out.setBytes(4, clientVersionToUse);
         validationType = getValidationTypeForClientVersion(clientVersionToUse);
-        logger.info("using client version {}", Utils.toHex(clientVersionToUse));
+      //  logger.info("using client version {}", Utils.toHex(clientVersionToUse));
         if (validationType == 0) {
             out.copy();
             return out;
         }
-        logger.debug("creating client part 1, validation type: {}", validationType);
+      //  logger.debug("creating client part 1, validation type: {}", validationType);
         initKeyPair();
         int publicKeyOffset = publicKeyOffset(out, validationType);
         out.setBytes(publicKeyOffset, ownPublicKey);
@@ -328,7 +324,7 @@ public class RtmpHandshake {
     private void decodeServer0(ChannelBuffer in) {
         byte flag = in.getByte(0);
         if(rtmpe &&  flag != 0x06) {
-            logger.warn("server does not support rtmpe! falling back to rtmp");
+         //   logger.warn("server does not support rtmpe! falling back to rtmp");
             rtmpe = false;
         }
     }
@@ -338,7 +334,7 @@ public class RtmpHandshake {
         in.getBytes(0, peerTime);
         byte[] serverVersion = new byte[4];
         in.getBytes(4, serverVersion);
-        logger.debug("server time: {}, version: {}", Utils.toHex(peerTime), Utils.toHex(serverVersion));
+     //   logger.debug("server time: {}, version: {}", Utils.toHex(peerTime), Utils.toHex(serverVersion));
         if(swfHash != null) {
             // swf verification
             byte[] key = new byte[DIGEST_SIZE];
@@ -353,21 +349,20 @@ public class RtmpHandshake {
             swfv.writeBytes(digest);
             swfvBytes = new byte[42];
             swfv.readBytes(swfvBytes);
-            logger.info("calculated swf verification response: {}", Utils.toHex(swfvBytes));
+        //    logger.info("calculated swf verification response: {}", Utils.toHex(swfvBytes));
         }
         if(validationType == 0) {
             peerPartOne = in; // save for later
             return;
         }
-        logger.debug("processing server part 1, validation type: {}", validationType);
+     //   logger.debug("processing server part 1, validation type: {}", validationType);
         int digestOffset = digestOffset(in, validationType);
         byte[] expected = digestHandshake(in, digestOffset, SERVER_CONST);
         peerPartOneDigest = new byte[DIGEST_SIZE];
         in.getBytes(digestOffset, peerPartOneDigest);
         if (!Arrays.equals(peerPartOneDigest, expected)) {
             int altValidationType = validationType == 1 ? 2 : 1;
-            logger.warn("server part 1 validation failed for type {}, will try with type {}",
-                    validationType, altValidationType);
+        //    logger.warn("server part 1 validation failed for type {}, will try with type {}",validationType, altValidationType);
             digestOffset = digestOffset(in, altValidationType);
             expected = digestHandshake(in, digestOffset, SERVER_CONST);
             peerPartOneDigest = new byte[DIGEST_SIZE];
@@ -377,7 +372,7 @@ public class RtmpHandshake {
             }
             validationType = altValidationType;
         }
-        logger.info("server part 1 validation success");
+       // logger.info("server part 1 validation success");
         peerPublicKey = new byte[PUBLIC_KEY_SIZE];
         int publicKeyOffset = publicKeyOffset(in, validationType);
         in.getBytes(publicKeyOffset, peerPublicKey);
@@ -388,7 +383,7 @@ public class RtmpHandshake {
         if(validationType == 0) {
             return; // TODO validate random echo
         }
-        logger.debug("processing server part 2 for validation");
+       // logger.debug("processing server part 2 for validation");
         byte[] key = Utils.sha256(ownPartOneDigest, SERVER_CONST_CRUD);
         int digestOffset = HANDSHAKE_SIZE - DIGEST_SIZE;
         byte[] expected = digestHandshake(in, digestOffset, key);
@@ -397,7 +392,7 @@ public class RtmpHandshake {
         if (!Arrays.equals(actual, expected)) {
             throw new RuntimeException("server part 2 validation failed");
         }
-        logger.info("server part 2 validation success");
+      //  logger.info("server part 2 validation success");
     }
 
     public ChannelBuffer encodeClient2() {
@@ -406,7 +401,7 @@ public class RtmpHandshake {
             peerPartOne.setInt(4, 0); // more zeros
             return peerPartOne;
         }
-        logger.debug("creating client part 2 for validation");
+      //  logger.debug("creating client part 2 for validation");
         ChannelBuffer out = generateRandomHandshake();
         byte[] key = Utils.sha256(peerPartOneDigest, CLIENT_CONST_CRUD);
         int digestOffset = HANDSHAKE_SIZE - DIGEST_SIZE;
@@ -425,7 +420,7 @@ public class RtmpHandshake {
     private void decodeClient0(ChannelBuffer in) {
         final byte firstByte = in.readByte();
         rtmpe = firstByte == 0x06;
-        logger.debug("client first byte {}, rtmpe: {}", Utils.toHex(firstByte), rtmpe);
+      //  logger.debug("client first byte {}, rtmpe: {}", Utils.toHex(firstByte), rtmpe);
     }
 
     private boolean decodeClient1(ChannelBuffer in) {
@@ -433,13 +428,13 @@ public class RtmpHandshake {
         in.getBytes(0, peerTime);
         peerVersion = new byte[4];
         in.getBytes(4, peerVersion);
-        logger.debug("client time: {}, version: {}", Utils.toHex(peerTime), Utils.toHex(peerVersion));
+      //  logger.debug("client time: {}, version: {}", Utils.toHex(peerTime), Utils.toHex(peerVersion));
         validationType = getValidationTypeForClientVersion(peerVersion);
         if(validationType == 0) {
             peerPartOne = in; // save for later
             return true;
         }
-        logger.debug("processing client part 1 for validation type: {}", validationType);
+     //   logger.debug("processing client part 1 for validation type: {}", validationType);
         initKeyPair();
         int digestOffset = digestOffset(in, validationType);
         peerPartOneDigest = new byte[DIGEST_SIZE];
@@ -448,7 +443,7 @@ public class RtmpHandshake {
         if(!Arrays.equals(peerPartOneDigest, expected)) {
             throw new RuntimeException("client part 1 validation failed");
         }
-        logger.info("client part 1 validation success");
+     //   logger.info("client part 1 validation success");
         int publicKeyOffset = publicKeyOffset(in, validationType);
         peerPublicKey = new byte[PUBLIC_KEY_SIZE];
         in.getBytes(publicKeyOffset, peerPublicKey);
@@ -470,7 +465,7 @@ public class RtmpHandshake {
             out.copy();
             return out;
         }
-        logger.debug("creating server part 1 for validation type: {}", validationType);
+   //     logger.debug("creating server part 1 for validation type: {}", validationType);
         int publicKeyOffset = publicKeyOffset(out, validationType);
         out.setBytes(publicKeyOffset, ownPublicKey);
         int digestOffset = digestOffset(out, validationType);
@@ -484,7 +479,7 @@ public class RtmpHandshake {
         if(validationType == 0) {
             return;
         }
-        logger.debug("processing client part 2 for validation");
+      //  logger.debug("processing client part 2 for validation");
         byte[] key = Utils.sha256(ownPartOneDigest, CLIENT_CONST_CRUD);
         int digestOffset = HANDSHAKE_SIZE - DIGEST_SIZE;
         byte[] expected = digestHandshake(in, digestOffset, key);
@@ -493,7 +488,7 @@ public class RtmpHandshake {
         if (!Arrays.equals(actual, expected)) {
             throw new RuntimeException("client part 2 validation failed");
         }
-        logger.info("client part 2 validation success");
+     //   logger.info("client part 2 validation success");
     }
 
     public ChannelBuffer encodeServer2() {
@@ -502,7 +497,7 @@ public class RtmpHandshake {
             peerPartOne.setInt(4, 0); // more zeros
             return peerPartOne;
         }
-        logger.debug("creating server part 2 for validation");
+    //    logger.debug("creating server part 2 for validation");
         ChannelBuffer out = generateRandomHandshake();
         byte[] key = Utils.sha256(peerPartOneDigest, SERVER_CONST_CRUD);
         int digestOffset = HANDSHAKE_SIZE - DIGEST_SIZE;

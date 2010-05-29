@@ -27,12 +27,11 @@ import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.handler.codec.replay.ReplayingDecoder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
 
 public class RtmpDecoder extends ReplayingDecoder<DecoderState> {
 
-    private static final Logger logger = LoggerFactory.getLogger(RtmpDecoder.class);
+  
 
     public static enum DecoderState {        
         GET_HEADER,
@@ -78,13 +77,13 @@ public class RtmpDecoder extends ReplayingDecoder<DecoderState> {
                     header.setTime(prevHeader.getTime() + header.getDeltaTime());
                 }
                 final RtmpMessage message = MessageType.decode(header, payload);
-                if(logger.isDebugEnabled()) {
-                    logger.debug("<< {}", message);
-                }
+              //  if(logger.isDebugEnabled()) {
+              //      logger.debug("<< {}", message);
+             //   }
                 payload = null;
                 if(header.isChunkSize()) {
                     final ChunkSize csMessage = (ChunkSize) message;
-                    logger.debug("decoder new chunk size: {}", csMessage);
+                   // logger.debug("decoder new chunk size: {}", csMessage);
                     chunkSize = csMessage.getChunkSize();
                 }
                 completedHeaders[channelId] = header;

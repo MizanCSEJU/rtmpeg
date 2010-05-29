@@ -21,18 +21,16 @@ package rtmp.server;
 
 import io.flv.FlvReader;
 import io.flv.FlvWriter;
+
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 import rtmp.RtmpConfig;
 import rtmp.RtmpReader;
 import rtmp.RtmpWriter;
 import util.Utils;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class ServerApplication {
-
-    private static final Logger logger = LoggerFactory.getLogger(ServerApplication.class);
 
     private final String name;
     private final Map<String, ServerStream> streams;
@@ -63,7 +61,7 @@ public class ServerApplication {
                 return new FlvReader(path + readerPlayName);
             }
         } catch(Exception e) {
-            logger.info("reader creation failed: {}", e.getMessage());
+          //  logger.info("reader creation failed: {}", e.getMessage());
             return null;
         }
     }

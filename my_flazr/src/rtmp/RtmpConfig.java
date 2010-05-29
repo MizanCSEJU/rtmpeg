@@ -24,13 +24,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Properties;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class RtmpConfig {
-
-	private static final Logger logger = LoggerFactory
-			.getLogger(RtmpConfig.class);
 
 	public static enum Type {
 		SERVER, SERVER_STOP, PROXY, PROXY_STOP
@@ -61,37 +56,31 @@ public class RtmpConfig {
 		final InputStream is = RtmpConfig.class
 				.getResourceAsStream("/flazr-init.properties");
 		if (is != null) {
-			logger.info("flazr-init.properties found on classpath");
+			// logger.info("flazr-init.properties found on classpath");
 			final Properties flazrProps = loadProps(is);
 			flazrHome = flazrProps.getProperty("flazr.home");
 			if (flazrHome == null) {
-				logger
-						.warn("'flazr.home' key not found, will try system properties");
+				// logger.warn("'flazr.home' key not found, will try system properties");
 			}
 		} else {
-			logger
-					.warn("flazr-init.properties not found on classpath, will try system property 'flazr.home'");
+			// logger.warn("flazr-init.properties not found on classpath, will try system property 'flazr.home'");
 		}
 		if (flazrHome == null) {
 			flazrHome = System.getProperty("flazr.home");
 		}
 		if (flazrHome == null) {
 			File currentDir = new File("");
-			logger
-					.warn(
-							"'flazr.home' system property not set, will use current directory: {}",
-							currentDir.getAbsolutePath());
+			//logger.warn("'flazr.home' system property not set, will use current directory: {}",currentDir.getAbsolutePath());
 			flazrHome = "";
 		} else if (!flazrHome.endsWith("/")) {
 			flazrHome = flazrHome + "/";
-			logger.info("using 'flazr.home' = {}", flazrHome);
+			//logger.info("using 'flazr.home' = {}", flazrHome);
 		}
 		File propsFile = new File(flazrHome + "conf/flazr.properties");
 		if (!propsFile.exists()) {
-			logger.warn("{} not found, will use configuration defaults",
-					propsFile.getAbsolutePath());
+			//logger.warn("{} not found, will use configuration defaults",propsFile.getAbsolutePath());
 		} else {
-			logger.info("loading config from: {}", propsFile.getAbsolutePath());
+			//logger.info("loading config from: {}", propsFile.getAbsolutePath());
 			Properties props = loadProps(propsFile);
 			switch (type) {
 			case SERVER:
@@ -109,14 +98,12 @@ public class RtmpConfig {
 				SERVER_HOME_DIR = props.getProperty("server.home", "home");
 				File homeFile = new File(SERVER_HOME_DIR);
 				if (!homeFile.exists()) {
-					logger.error("home dir does not exist, aborting: {}",
-							homeFile.getAbsolutePath());
+				//	logger.error("home dir does not exist, aborting: {}",homeFile.getAbsolutePath());
 					throw new RuntimeException("home dir does not exist: "
 							+ homeFile.getAbsolutePath());
 				}
-				logger.info("home dir: '{}'", homeFile.getAbsolutePath());
-				logger.info("server port: {} (stop {})", SERVER_PORT,
-						SERVER_STOP_PORT);
+				//logger.info("home dir: '{}'", homeFile.getAbsolutePath());
+				//logger.info("server port: {} (stop {})", SERVER_PORT,SERVER_STOP_PORT);
 				break;
 			case PROXY:
 			case PROXY_STOP:
@@ -136,10 +123,8 @@ public class RtmpConfig {
 						.getProperty("proxy.remote.port"));
 				if (proxyRemote != null)
 					PROXY_REMOTE_PORT = proxyRemote;
-				logger.info("proxy port: {} (stop {})", PROXY_PORT,
-						PROXY_STOP_PORT);
-				logger.info("proxy remote host: {} port: {}",
-						PROXY_REMOTE_HOST, PROXY_REMOTE_PORT);
+				//logger.info("proxy port: {} (stop {})", PROXY_PORT,PROXY_STOP_PORT);
+				//logger.info("proxy remote host: {} port: {}",PROXY_REMOTE_HOST, PROXY_REMOTE_PORT);
 				break;
 			}
 		}
@@ -189,8 +174,7 @@ public class RtmpConfig {
 		try {
 			return Integer.parseInt(s);
 		} catch (Exception e) {
-			logger.warn("unable to parse into integer value: {}", e
-					.getMessage());
+			//logger.warn("unable to parse into integer value: {}", e.getMessage());
 			return null;
 		}
 	}

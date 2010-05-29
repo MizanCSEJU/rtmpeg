@@ -19,13 +19,12 @@
 
 package rtmp.server;
 
-import rtmp.RtmpConfig;
-import util.StopMonitor;
 import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+
 import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.ChannelFactory;
 import org.jboss.netty.channel.group.ChannelGroup;
@@ -34,12 +33,11 @@ import org.jboss.netty.channel.group.DefaultChannelGroup;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 import org.jboss.netty.util.HashedWheelTimer;
 import org.jboss.netty.util.Timer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import rtmp.RtmpConfig;
+import util.StopMonitor;
 
 public class RtmpServer {
-
-    private static final Logger logger = LoggerFactory.getLogger(RtmpServer.class);
 
     static {
         RtmpConfig.configureServer();
@@ -66,7 +64,7 @@ public class RtmpServer {
 
         final InetSocketAddress socketAddress = new InetSocketAddress(RtmpConfig.SERVER_PORT);
         bootstrap.bind(socketAddress);
-        logger.info("server started, listening on: {}", socketAddress);
+        //logger.info("server started, listening on: {}", socketAddress);
 
         final Thread monitor = new StopMonitor(RtmpConfig.SERVER_STOP_PORT);
         monitor.start();        
@@ -74,11 +72,11 @@ public class RtmpServer {
 
         TIMER.stop();
         final ChannelGroupFuture future = CHANNELS.close();
-        logger.info("closing channels");
+       // logger.info("closing channels");
         future.awaitUninterruptibly();
-        logger.info("releasing resources");
+      //  logger.info("releasing resources");
         factory.releaseExternalResources();
-        logger.info("server stopped");
+       // logger.info("server stopped");
 
     }
 

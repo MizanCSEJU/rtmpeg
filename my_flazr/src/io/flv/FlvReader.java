@@ -21,21 +21,19 @@ package io.flv;
 
 import io.BufferReader;
 import io.FileChannelReader;
+
+import org.jboss.netty.buffer.ChannelBuffer;
+import org.jboss.netty.buffer.ChannelBuffers;
+
 import rtmp.RtmpMessage;
 import rtmp.RtmpReader;
 import rtmp.message.Aggregate;
 import rtmp.message.MessageType;
 import rtmp.message.Metadata;
 import rtmp.message.MetadataAmf0;
-import org.jboss.netty.buffer.ChannelBuffer;
-import org.jboss.netty.buffer.ChannelBuffers;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class FlvReader implements RtmpReader {
 
-    private static final Logger logger = LoggerFactory.getLogger(FlvReader.class);
-    
     private final BufferReader in;
     private final long mediaStartPosition;
     private final Metadata metadata;
@@ -51,12 +49,12 @@ public class FlvReader implements RtmpReader {
             metadata = (Metadata) metadataTemp;
             mediaStartPosition = in.position();
         } else {
-            logger.warn("flv file does not start with 'onMetaData', using empty one");
+            //logger.warn("flv file does not start with 'onMetaData', using empty one");
             metadata = new MetadataAmf0("onMetaData");
             in.position(13);
             mediaStartPosition = 13;
         }
-        logger.debug("flv file metadata: {}", metadata);
+        //logger.debug("flv file metadata: {}", metadata);
     }
 
     @Override
@@ -99,7 +97,7 @@ public class FlvReader implements RtmpReader {
 
     @Override
     public long seek(final long time) {
-        logger.debug("trying to seek to: {}", time);
+        //logger.debug("trying to seek to: {}", time);
         if(time == 0) { // special case
             try {
                 in.position(mediaStartPosition);
@@ -131,7 +129,7 @@ public class FlvReader implements RtmpReader {
             while(hasPrev()) {
                 final RtmpMessage cursor = prev();
                 if(cursor.getHeader().isVideo() && isSyncFrame(cursor)) {
-                    logger.debug("returned seek frame / position: {}", cursor);
+                    //logger.debug("returned seek frame / position: {}", cursor);
                     return cursor.getHeader().getTime();
                 }
             }
@@ -201,7 +199,7 @@ public class FlvReader implements RtmpReader {
         FlvReader reader = new FlvReader("home/apps/vod/IronMan.flv");
         while(reader.hasNext()) {
             RtmpMessage message = reader.next();
-            logger.debug("{} {}", message, ChannelBuffers.hexDump(message.encode()));
+          //  logger.debug("{} {}", message, ChannelBuffers.hexDump(message.encode()));
         }
         reader.close();
     }

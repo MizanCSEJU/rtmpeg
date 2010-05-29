@@ -20,20 +20,19 @@
 package amf;
 
 
-import util.ValueToEnum;
+import static amf.Amf0Value.Type.MAP;
+
 import java.util.Arrays;
-import static amf.Amf0Value.Type.*;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.jboss.netty.buffer.ChannelBuffer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import util.ValueToEnum;
 
 public class Amf0Value {
 
-    private static final Logger logger = LoggerFactory.getLogger(Amf0Value.class);
 
     private Amf0Value() {}
 
@@ -98,9 +97,9 @@ public class Amf0Value {
 
     public static void encode(final ChannelBuffer out, final Object value) {
         final Type type = Type.getType(value);
-        if(logger.isDebugEnabled()) {
-            logger.debug(">> " + toString(type, value));
-        }
+      //  if(logger.isDebugEnabled()) {
+           // logger.debug(">> " + toString(type, value));
+       // }
         out.writeByte((byte) type.value);
         switch (type) {
             case NUMBER:
@@ -169,9 +168,9 @@ public class Amf0Value {
     public static Object decode(final ChannelBuffer in) {
         final Type type = Type.valueToEnum(in.readByte());
         final Object value = decode(in, type);
-        if(logger.isDebugEnabled()) {
-            logger.debug("<< " + toString(type, value));
-        }
+       // if(logger.isDebugEnabled()) {
+           // logger.debug("<< " + toString(type, value));
+      //  }
         return value;
     }
 
@@ -194,9 +193,9 @@ public class Amf0Value {
                 if(type == MAP) {
                     count = in.readInt(); // should always be 0
                     map = new LinkedHashMap<String, Object>();
-                    if(count > 0 && logger.isDebugEnabled()) {
-                        logger.debug("non-zero size for MAP type: {}", count);
-                    }
+                  //  if(count > 0 && logger.isDebugEnabled()) {
+                     //   logger.debug("non-zero size for MAP type: {}", count);
+                  //  }
                 } else {
                     count = 0;
                     map = new Amf0Object();
@@ -207,15 +206,15 @@ public class Amf0Value {
                     in.getBytes(in.readerIndex(), endMarker);
                     if (Arrays.equals(endMarker, OBJECT_END_MARKER)) {
                         in.skipBytes(3);
-                        if(logger.isDebugEnabled()) {
-                            logger.debug("end MAP / OBJECT, found object end marker [000009]");
-                        }
+                      //  if(logger.isDebugEnabled()) {
+                      //      logger.debug("end MAP / OBJECT, found object end marker [000009]");
+                     //   }
                         break;
                     }
                     if(count > 0 && i++ == count) {
-                        if(logger.isDebugEnabled()) {
-                            logger.debug("stopping map decode after reaching count: {}", count);
-                        }
+                       // if(logger.isDebugEnabled()) {
+                      //      logger.debug("stopping map decode after reaching count: {}", count);
+                      //  }
                         break;
                     }
                     map.put(decodeString(in), decode(in));

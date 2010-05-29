@@ -20,7 +20,7 @@
 package rtmp.message;
 
 import java.util.Arrays;
-import java.util.LinkedHashMap;
+
 import java.util.Map;
 
 import org.jboss.netty.buffer.ChannelBuffer;
@@ -56,8 +56,6 @@ public abstract class Metadata extends AbstractMessage {
 		}
 		return map.get(key);
 	}
-
-	
 
 	public Map<String, Object> getMap(int index) {
 		return (Map<String, Object>) getData(index);

@@ -19,8 +19,7 @@
 
 package rtmp;
 
-import rtmp.message.ChunkSize;
-import rtmp.message.Control;
+
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.ChannelHandlerContext;
@@ -28,19 +27,18 @@ import org.jboss.netty.channel.ChannelPipelineCoverage;
 import org.jboss.netty.channel.Channels;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelDownstreamHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import rtmp.message.ChunkSize;
+import rtmp.message.Control;
 
 @ChannelPipelineCoverage("one")
 public class RtmpEncoder extends SimpleChannelDownstreamHandler {
-
-    private static final Logger logger = LoggerFactory.getLogger(RtmpEncoder.class);
 
     private int chunkSize = 128;    
     private RtmpHeader[] channelPrevHeaders = new RtmpHeader[RtmpHeader.MAX_CHANNEL_ID];    
 
     private void clearPrevHeaders() {
-        logger.debug("clearing prev stream headers");
+       // logger.debug("clearing prev stream headers");
         channelPrevHeaders = new RtmpHeader[RtmpHeader.MAX_CHANNEL_ID];
     }
 
@@ -54,7 +52,7 @@ public class RtmpEncoder extends SimpleChannelDownstreamHandler {
         final RtmpHeader header = message.getHeader();
         if(header.isChunkSize()) {
             final ChunkSize csMessage = (ChunkSize) message;
-            logger.debug("encoder new chunk size: {}", csMessage);
+          //  logger.debug("encoder new chunk size: {}", csMessage);
             chunkSize = csMessage.getChunkSize();
         } else if(header.isControl()) {
             final Control control = (Control) message;
@@ -75,16 +73,16 @@ public class RtmpEncoder extends SimpleChannelDownstreamHandler {
             }
             final int deltaTime = header.getTime() - prevHeader.getTime();
             if(deltaTime < 0) {
-                logger.warn("negative time: {}", header);
+               // logger.warn("negative time: {}", header);
                 header.setDeltaTime(0);
             } else {
                 header.setDeltaTime(deltaTime);
             }
         } // else will be default LARGE
         channelPrevHeaders[channelId] = header;        
-        if(logger.isDebugEnabled()) {
-            logger.debug(">> {}", message);
-        }                
+     //   if(logger.isDebugEnabled()) {
+     //       logger.debug(">> {}", message);
+     //   }                
         final ChannelBuffer out = ChannelBuffers.buffer(
                 RtmpHeader.MAX_ENCODED_SIZE + header.getSize() + header.getSize() / chunkSize);
         boolean first = true;
