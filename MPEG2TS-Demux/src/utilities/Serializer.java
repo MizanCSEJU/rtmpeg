@@ -7,15 +7,15 @@ import demux.Demultiplexer;
 import demux.Frame;
 
 public class Serializer {
-	final static int headerSize = 8;
+	final static int headerSize = 7;
 	final static int videoData = 0x09;
 	final static int rtmpHeaderSize = 11;
 	public static byte[] createAMFVideoData(byte[] payload,int timestamp){
 		byte [] message = new byte[payload.length+headerSize];
 		byte [] payloadLength = Utils.intToByteArray(payload.length); //TODO if payload size is bigger than 3 bytes
 		byte [] timeStamp = Utils.intToByteArray(timestamp);
-		message[0] = 0x45;
-		message[7] = videoData;
+		message[0] = (byte) 0x45;
+		message[6] = videoData;
 		
 		for (int i=1 ; i<4 ; i++)
 			message[i]=timeStamp[i];
@@ -24,8 +24,7 @@ public class Serializer {
 			message[i+3]=payloadLength[i];
 		
 		
-		for (int i=headerSize ; i<message.length ; i++)
-			message[i] = payload[i-headerSize];
+		System.arraycopy(payload, 0, message, headerSize, payload.length);
 
 		return message;
 	}
@@ -58,6 +57,8 @@ public class Serializer {
 		message[7] = 0x09;
 		return message;
 	}
+	
+	
 	
 	public static void main(String args[]) throws IOException{
 		File file = new File("video.mpg");

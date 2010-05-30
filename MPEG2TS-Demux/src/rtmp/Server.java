@@ -139,22 +139,27 @@ public class Server {
 			out.write(ping);
 			System.out.println(">>> SENDING STREAM BIGIN - END >>>");
 			
-			
+			/*
 			System.out.println("\n\n>>> SENDING SET CHUNK SIZE >>>");
 			byte [] setChunkSize = ControlMessages.setChunkSize(65536, timestamp);
 			Utils.printStream(setChunkSize);
 			out.write(setChunkSize);
 			System.out.println(">>> END OF SET CHUNK SIZE >>>\n\n\n");
-			
+			*/
 			
 			System.out.println(">>> SENDING _Result >>>");
-			byte [] result = Utils.readFile("wowoza/invoke1");
+			byte [] result = Utils.readFile("objects/result_flazer");
 			Utils.printStream(result);
 			out.write(result);
 			System.out.println(">>> END OF SENDING _Result >>>\n\n\n");
 			
 			
-			
+			System.out.println(">>> SENDING BW_DONE >>>");
+			byte [] bwDone = Utils.readFile("objects/bw_done");
+			Utils.printStream(bwDone);
+			out.write(bwDone);
+			System.out.println(">>> END OF SENDING BW_DONE >>>\n\n\n");
+
 			
 		
 			
@@ -170,7 +175,7 @@ public class Server {
 			
 			
 			System.out.println("\n\n>>> SENDING RESULT MESSAGE >>>");
-			byte [] resultMessage = Utils.readFile("wowoza/result");
+			byte [] resultMessage = Utils.readFile("objects/result_flazer2");
 			Utils.printStream(resultMessage);
 			out.write(resultMessage);
 			System.out.println(">>> END OF RESULT MESSAGE >>>");
@@ -186,6 +191,12 @@ public class Server {
 			msg = new String(arr);
 			System.out.println("\n\n<<< play message End <<<");
 			
+			System.out.println("\n\n>>> SENDING SET CHUNK SIZE >>>");
+			byte [] setChunkSize = ControlMessages.setChunkSize(65536, timestamp);
+			Utils.printStream(setChunkSize);
+			out.write(setChunkSize);
+			System.out.println(">>> END OF SET CHUNK SIZE >>>\n\n\n");
+
 			
 			System.out.println("\n\n>>> SENDING stream is recorded >>>");
 			byte [] streamRecorded = ControlMessages.userControlMessage(timestamp, Utils.intToByteArray(createStreamID), ControlMessages.STREAM_IS_RECORDED);
@@ -273,26 +284,28 @@ public class Server {
 		//}
 
 		FlvDemux dem = new FlvDemux("sample.flv");
+		File f = new File("video.mpg");
+		Demultiplexer d= new Demultiplexer(f);
 		int i = 0;
-		Frame f = null;
+		Frame ff = d.getNext();
 		FLVTag tag= dem.getNextVideoTag();
 		do {
 			//f = demux.getNext();
 			//if (f == null)
 			//	break;
 			
-			byte[] data = utilities.Serializer.createAMFVideoData(tag.getData(),
-				tag.getTimeStamp());
+			//byte[] data = utilities.Serializer.createAMFVideoData(ff.getFrame(),
+			//	0);
 			
 			
 			//System.out.println("Sending chunk: " + (i++) + " Size is: "
 			//		+ (data.length)+" Timestamp="+tag.getTimeStamp());
-			byte [] chunk = utilities.Serializer.rtmpVideoMessage(tag.getData(), tag.getTimeStamp(), createStreamID);
-			byte [] header = ChunkCreator.createChunk(5, 0, timestamp, chunk.length, (byte)9, createStreamID);
-			//byte [] chunk = ChunkCreator.createChunk(5, 0, 0, tag.getDataSize(), (byte)0x9, 1);
+			//byte [] chunk = utilities.Serializer.rtmpVideoMessage(tag.getData(), tag.getTimeStamp(), createStreamID);
+			byte [] header = ChunkCreator.createChunk(5, 0, timestamp, tag.getDataSize(), (byte)9, createStreamID);
+			byte [] chunk = ChunkCreator.createChunk(5, 0, 0, tag.getDataSize(), (byte)0x9, 1);
 			try {
 				out.write(header);
-				out.write(chunk);
+				out.write(tag.getData());
 			} catch (Exception e) {
 				e.printStackTrace();
 				return;
@@ -306,8 +319,9 @@ public class Server {
 				Thread.sleep(5000);
 			}
 			
+			ff = d.getNext();
 			tag= dem.getNextTag();
-		} while (tag != null);
+		} while (tag != null || ff !=null);
 
 		out.close();
 		in.close();
