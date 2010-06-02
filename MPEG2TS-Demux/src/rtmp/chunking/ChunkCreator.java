@@ -79,7 +79,8 @@ public class ChunkCreator {
 		
 		chunkMessageHeader[6] = messageType;
 		
-		byte [] streamIDArray = utilities.Utils.intToByteArray(streamID);
+		byte [] streamIDArray = new byte[4];
+		utilities.Utils.writeInt32Reverse(streamIDArray,streamID);
 		
 		for (int i=7 ;i<11 ;i++){
 			chunkMessageHeader[i] = streamIDArray[i-7];

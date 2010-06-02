@@ -283,12 +283,15 @@ public class Server {
 
 		//}
 
-		FlvDemux dem = new FlvDemux("sample.flv");
+		FlvDemux dem = new FlvDemux("9.flv");
 		File f = new File("video.mpg");
 		Demultiplexer d= new Demultiplexer(f);
 		int i = 0;
 		Frame ff = d.getNext();
 		FLVTag tag= dem.getNextVideoTag();
+		
+	//	Utils.printStream(tag.getData());
+		
 		do {
 			//f = demux.getNext();
 			//if (f == null)
@@ -302,10 +305,10 @@ public class Server {
 			//		+ (data.length)+" Timestamp="+tag.getTimeStamp());
 			//byte [] chunk = utilities.Serializer.rtmpVideoMessage(tag.getData(), tag.getTimeStamp(), createStreamID);
 			byte [] header = ChunkCreator.createChunk(5, 0, timestamp, tag.getDataSize(), (byte)9, createStreamID);
-			byte [] chunk = ChunkCreator.createChunk(5, 0, 0, tag.getDataSize(), (byte)0x9, 1);
+			byte [] data = tag.getData();
 			try {
 				out.write(header);
-				out.write(tag.getData());
+				out.write(data);
 			} catch (Exception e) {
 				e.printStackTrace();
 				return;

@@ -50,4 +50,11 @@ public class Utils {
 		return (byteArray);
 	}
 	
+	 public static void writeInt32Reverse(byte [] arr4, final int value) {
+	        arr4[0] = ((byte) (0xFF & value));
+	        arr4[1] = ((byte) (0xFF & (value >> 8)));
+	        arr4[2] = ((byte) (0xFF & (value >> 16)));
+	        arr4[3] = ((byte) (0xFF & (value >> 24)));
+	    }
+	
 }
