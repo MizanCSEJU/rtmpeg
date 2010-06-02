@@ -284,27 +284,12 @@ public class Server {
 		//}
 
 		FlvDemux dem = new FlvDemux("9.flv");
-		File f = new File("video.mpg");
-		Demultiplexer d= new Demultiplexer(f);
-		int i = 0;
-		Frame ff = d.getNext();
 		FLVTag tag= dem.getNextVideoTag();
 		
-	//	Utils.printStream(tag.getData());
 		
 		do {
-			//f = demux.getNext();
-			//if (f == null)
-			//	break;
 			
-			//byte[] data = utilities.Serializer.createAMFVideoData(ff.getFrame(),
-			//	0);
-			
-			
-			//System.out.println("Sending chunk: " + (i++) + " Size is: "
-			//		+ (data.length)+" Timestamp="+tag.getTimeStamp());
-			//byte [] chunk = utilities.Serializer.rtmpVideoMessage(tag.getData(), tag.getTimeStamp(), createStreamID);
-			byte [] header = ChunkCreator.createChunk(5, 0, timestamp, tag.getDataSize(), (byte)9, createStreamID);
+			byte [] header = ChunkCreator.createChunk(5, 0, tag.getTimeStamp(), tag.getDataSize(), (byte)tag.getTagType(), createStreamID);
 			byte [] data = tag.getData();
 			try {
 				out.write(header);
@@ -313,18 +298,18 @@ public class Server {
 				e.printStackTrace();
 				return;
 			}
-			Thread.sleep(10);
+			
+			Thread.sleep(40);
 			// Listening for client (for responses).
 			arr = new byte[in.available()];
 			if (arr.length > 0){
 				in.read(arr);
 				Utils.printStream(arr);
-				Thread.sleep(5000);
+				//Thread.sleep(5000);
 			}
 			
-			ff = d.getNext();
-			tag= dem.getNextTag();
-		} while (tag != null || ff !=null);
+			tag = dem.getNextVideoTag();
+		} while (tag !=null);
 
 		out.close();
 		in.close();
