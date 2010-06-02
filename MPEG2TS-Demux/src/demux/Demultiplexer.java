@@ -19,7 +19,8 @@ import utilities.TSutils;
  * 
  */
 public class Demultiplexer {
-
+	
+	private File file;
 	private final static int packetSize = 188;
 	private final static int H264PID = 68;
 	private final static int ptsTimeResolution = 90000;
@@ -61,7 +62,8 @@ public class Demultiplexer {
 	 * @param file
 	 * @throws IOException
 	 */
-	public Demultiplexer(File file) throws IOException {
+	public Demultiplexer(String filename) throws IOException {
+		file = new File(filename);
 		is = new FileInputStream(file);
 		noOfPacketsInFile = (file.length() / packetSize);
 		fillBuffer();
@@ -229,8 +231,7 @@ public class Demultiplexer {
 	}
 
 	public static void main(String[] args) throws IOException {
-		File file = new File("video.mpg");
-		Demultiplexer demux = new Demultiplexer(file);
+		Demultiplexer demux = new Demultiplexer("video.mpg");
 		Frame f = demux.getNext();
 		int i=0;
 		do {

@@ -13,15 +13,11 @@ import rtmp.chunking.ChunkException;
 import rtmp.chunking.ControlMessages;
 import rtmp.chunking.UnsupportedFeature;
 
-import demux.Demultiplexer;
 import demux.FLVTag;
 import demux.FlvDemux;
-import demux.Frame;
 
 import utilities.Utils;
 
-import java.util.Calendar;
-import java.util.Date;
 import java.util.Random;
 public class Server {
 	
@@ -31,7 +27,6 @@ public class Server {
 	private int timestamp = 0;
 	private int streamID = 0;
 	private int createStreamID = 1;
-	private int recordedStream = 101;
 
 	public Server() throws InterruptedException, UnknownHostException,
 			IOException {

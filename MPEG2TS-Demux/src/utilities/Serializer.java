@@ -61,8 +61,7 @@ public class Serializer {
 	
 	
 	public static void main(String args[]) throws IOException{
-		File file = new File("video.mpg");
-		Demultiplexer demux = new Demultiplexer(file);
+		Demultiplexer demux = new Demultiplexer("video.mpg");
 		for (int i=0 ; i<1 ; i++){
 			
 			Frame f = demux.getNext();
