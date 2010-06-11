@@ -78,6 +78,7 @@ public class Server {
 		parse(arr);
 		
 
+
 		System.out.println("\n\n>>> SENDING SET CHUNK SIZE >>>");
 		byte[] setChunkSize = ControlMessages.setChunkSize(65536, timestamp);
 		Utils.printStream(setChunkSize);
