@@ -139,7 +139,7 @@ public class Server {
 
 	private void parseRemaineder(byte [] arr, byte [] message,int headerSize) throws IOException, ChunkException, UnsupportedFeature{
 		if (arr.length > message.length + headerSize+1){
-			byte [] left = new byte[arr.length-message.length+1];
+			byte [] left = new byte[arr.length-message.length-headerSize];
 			System.arraycopy(arr, message.length + headerSize, left, 0, left.length);
 			parse(left);
 			return;
