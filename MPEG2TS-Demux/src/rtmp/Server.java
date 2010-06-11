@@ -34,6 +34,7 @@ public class Server {
 	private OutputStream out;
 	private InputStream in;
 	private Socket clientSocket;
+	private boolean SENDING_ON = true;
 
 	public Server() throws InterruptedException, UnknownHostException,
 			IOException {
@@ -56,29 +57,8 @@ public class Server {
 			ChunkException, UnsupportedFeature {
 
 		initConnection();
-
 		handshake();
-
-		System.out
-				.println(" =================== HANDSHAKE DONE =======================");
-
-		
-		//parseUserMessages();
-		
-		Utils.waitForStream(in);
-		byte[] arr = new byte[in.available()];
-		in.read(arr);
-		parse(arr);
-		Utils.waitForStream(in);
-		arr = new byte[in.available()];
-		in.read(arr);
-		parse(arr);
-		Utils.waitForStream(in);
-		arr = new byte[in.available()];
-		in.read(arr);
-		parse(arr);
-		
-
+		parseUserMessages();
 
 		System.out.println("\n\n>>> SENDING SET CHUNK SIZE >>>");
 		byte[] setChunkSize = ControlMessages.setChunkSize(65536, timestamp);
@@ -94,62 +74,75 @@ public class Server {
 		serverSocket.close();
 	}
 
-	private void parseUserMessages() {
-		// TODO Auto-generated method stub
-		
+	private void parseUserMessages() throws IOException, ChunkException,
+			UnsupportedFeature {
+
+		while (SENDING_ON) {
+			Utils.waitForStream(in);
+			byte[] arr = new byte[in.available()];
+			in.read(arr);
+			parse(arr);
+		}
 	}
 
-	private void parse(byte[] arr) throws IOException, ChunkException, UnsupportedFeature {
+	private void parse(byte[] arr) throws IOException, ChunkException,
+			UnsupportedFeature {
 		int headerNumber = (arr[0] & 0xC0) >> 6;
 		int headerSize = getHeaderSize(headerNumber);
-		
-		byte [] messageLengthArr= new byte[4];
-		for (int i=1 ; i<4 ;i++)
-			messageLengthArr[i] = arr[i+3];
+
+		byte[] messageLengthArr = new byte[4];
+		for (int i = 1; i < 4; i++)
+			messageLengthArr[i] = arr[i + 3];
 		int size = utilities.Utils.byteArrayToInt(messageLengthArr);
-		byte [] message = new byte[size];
-		
-		if (headerSize == 12 && ((arr[0] & 0xF) == 3 || arr[0] == 8) && arr[7] == FUNCTION_CALL ) { // AMF message Function Call
-			
+		byte[] message = new byte[size];
+
+		if (headerSize == 12 && ((arr[0] & 0xF) == 3 || arr[0] == 8)
+				&& arr[7] == FUNCTION_CALL) { // AMF message Function Call
+
 			System.arraycopy(arr, headerSize, message, 0, size);
 			String messageContent = new String(message);
-			if (messageContent.indexOf("connect")!=-1)
+			if (messageContent.indexOf("connect") != -1)
 				onConnect();
-			if (messageContent.indexOf("createStream")!=-1)
+			if (messageContent.indexOf("createStream") != -1)
 				onCreateStream();
-			if (messageContent.indexOf("play")!=-1)
+			if (messageContent.indexOf("play") != -1)
 				onPlay();
-			parseRemaineder(arr,message,headerSize);
+			parseRemaineder(arr, message, headerSize);
 		}
-		
+
 		else if (headerSize == 12 && arr[7] == ControlMessages.WINDOW_ACK_SIZE) {
 			sendStreamBegin();
-			parseRemaineder(arr,message,headerSize);
-		}
-		else {
+			parseRemaineder(arr, message, headerSize);
+		} else {
 			String s = new String(arr);
-			if (s.indexOf("play")!=-1)
+			if (s.indexOf("play") != -1)
 				onPlay();
+			SENDING_ON = false;
 		}
 
 	}
+
 	private void onCreateStream() {
-		
+
 	}
 
 	private void onPlay() {
-		
+
 	}
 
-	private void parseRemaineder(byte [] arr, byte [] message,int headerSize) throws IOException, ChunkException, UnsupportedFeature{
-		if (arr.length > message.length + headerSize+1){
-			byte [] left = new byte[arr.length-message.length-headerSize];
-			System.arraycopy(arr, message.length + headerSize, left, 0, left.length);
+	private void parseRemaineder(byte[] arr, byte[] message, int headerSize)
+			throws IOException, ChunkException, UnsupportedFeature {
+		if (arr.length > message.length + headerSize + 1) {
+			byte[] left = new byte[arr.length - message.length - headerSize];
+			System.arraycopy(arr, message.length + headerSize, left, 0,
+					left.length);
 			parse(left);
 			return;
 		}
 	}
-	private void sendStreamBegin() throws ChunkException, UnsupportedFeature, IOException {
+
+	private void sendStreamBegin() throws ChunkException, UnsupportedFeature,
+			IOException {
 		System.out.println(">>> SENDING STREAM BIGIN >>>"); // in the sniffer
 		// this message is
 		// identified by
@@ -171,17 +164,17 @@ public class Server {
 		Utils.printStream(bwDone);
 		out.write(bwDone);
 		System.out.println(">>> END OF SENDING BW_DONE >>>\n\n\n");
-		
+
 		System.out.println("\n\n>>> SENDING RESULT MESSAGE >>>");
 		byte[] resultMessage = Utils.readFile("objects/result_flazer2");
 		Utils.printStream(resultMessage);
 		out.write(resultMessage);
 		System.out.println(">>> END OF RESULT MESSAGE >>>");
 
-		
 	}
 
-	private void onConnect() throws IOException, ChunkException, UnsupportedFeature {
+	private void onConnect() throws IOException, ChunkException,
+			UnsupportedFeature {
 		System.out.println(">>> Sending Window Ack (SERVER BW) >>>");
 		byte[] windowAck = ControlMessages.windowAck(windowSize, timestamp);
 		Utils.printStream(windowAck);
