@@ -79,11 +79,6 @@ public class Server {
 		
 
 
-		System.out.println("\n\n>>> SENDING SET CHUNK SIZE >>>");
-		byte[] setChunkSize = ControlMessages.setChunkSize(65536, timestamp);
-		Utils.printStream(setChunkSize);
-		out.write(setChunkSize);
-		System.out.println(">>> END OF SET CHUNK SIZE >>>\n\n\n");
 
 		sendVideo("9.flv");
 
@@ -114,9 +109,9 @@ public class Server {
 			String messageContent = new String(message);
 			if (messageContent.indexOf("connect")!=-1)
 				onConnect();
-			if (messageContent.indexOf("createStream")!=-1)
+			else if (messageContent.indexOf("createStream")!=-1)
 				onCreateStream();
-			if (messageContent.indexOf("play")!=-1)
+			else if (messageContent.indexOf("play")!=-1)
 				onPlay();
 			parseRemaineder(arr,message,headerSize);
 		}
@@ -132,8 +127,12 @@ public class Server {
 		}
 
 	}
-	private void onCreateStream() {
-		// TODO Auto-generated method stub
+	private void onCreateStream() throws ChunkException, UnsupportedFeature, IOException {
+		System.out.println("\n\n>>> SENDING SET CHUNK SIZE >>>");
+		byte[] setChunkSize = ControlMessages.setChunkSize(65536, timestamp);
+		Utils.printStream(setChunkSize);
+		out.write(setChunkSize);
+		System.out.println(">>> END OF SET CHUNK SIZE >>>\n\n\n");
 		
 	}
 
