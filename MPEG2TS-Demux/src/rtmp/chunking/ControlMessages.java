@@ -8,7 +8,7 @@ public class ControlMessages {
 	private static final byte ABORT_MESSAGE = 2;
 	private static final byte ACK = 3;
 	private static final byte USER_CONTROL_MESSAGE = 4;
-	private static final byte WINDOW_ACK_SIZE = 5;
+	public static final byte WINDOW_ACK_SIZE = 5;
 	private static final byte SET_PEER_BW = 6;
 	
 	public static final int STREAM_BEGIN = 0;

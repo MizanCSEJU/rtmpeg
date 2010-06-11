@@ -1,6 +1,5 @@
 package rtmp;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -19,14 +18,22 @@ import demux.FlvDemux;
 import utilities.Utils;
 
 import java.util.Random;
+
+import javax.swing.text.Utilities;
+
 public class Server {
-	
+
+	private static final byte FUNCTION_CALL = 0x14;
 	private final int port = 1935;
+	private int windowSize = 2500000;
 	private final int socketRetryTime = 1000; // msec
 	private ServerSocket serverSocket = null;
 	private int timestamp = 0;
 	private int streamID = 0;
 	private int createStreamID = 1;
+	private OutputStream out;
+	private InputStream in;
+	private Socket clientSocket;
 
 	public Server() throws InterruptedException, UnknownHostException,
 			IOException {
@@ -45,8 +52,189 @@ public class Server {
 		}
 	}
 
-	void run() throws UnknownHostException, IOException, InterruptedException, ChunkException, UnsupportedFeature {
-		Socket clientSocket = null;
+	void run() throws UnknownHostException, IOException, InterruptedException,
+			ChunkException, UnsupportedFeature {
+
+		initConnection();
+
+		handshake();
+
+		System.out
+				.println(" =================== HANDSHAKE DONE =======================");
+
+		
+		//parseUserMessages();
+		Utils.waitForStream(in);
+		byte[] arr = new byte[in.available()];
+		in.read(arr);
+		parse(arr);
+		Utils.waitForStream(in);
+		arr = new byte[in.available()];
+		in.read(arr);
+		parse(arr);
+		Utils.waitForStream(in);
+		arr = new byte[in.available()];
+		in.read(arr);
+		parse(arr);
+		
+
+		System.out.println("\n\n>>> SENDING SET CHUNK SIZE >>>");
+		byte[] setChunkSize = ControlMessages.setChunkSize(65536, timestamp);
+		Utils.printStream(setChunkSize);
+		out.write(setChunkSize);
+		System.out.println(">>> END OF SET CHUNK SIZE >>>\n\n\n");
+
+		sendVideo("9.flv");
+
+		out.close();
+		in.close();
+		clientSocket.close();
+		serverSocket.close();
+	}
+
+	private void parseUserMessages() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	private void parse(byte[] arr) throws IOException, ChunkException, UnsupportedFeature {
+		int headerNumber = (arr[0] & 0xC0) >> 6;
+		int headerSize = getHeaderSize(headerNumber);
+		
+		byte [] messageLengthArr= new byte[4];
+		for (int i=1 ; i<4 ;i++)
+			messageLengthArr[i] = arr[i+3];
+		int size = utilities.Utils.byteArrayToInt(messageLengthArr);
+		byte [] message = new byte[size];
+		
+		if (headerSize == 12 && (arr[0] & 0xF) == 3 && arr[7] == FUNCTION_CALL ) { // AMF message Function Call
+			
+			System.arraycopy(arr, headerSize, message, 0, size);
+			String messageContent = new String(message);
+			if (messageContent.indexOf("connect")!=-1)
+				onConnect();
+			if (messageContent.indexOf("createStream")!=-1)
+				onCreateStream();
+			if (messageContent.indexOf("play")!=-1)
+				onPlay();
+			parseRemaineder(arr,message,headerSize);
+		}
+		
+		else if (headerSize == 12 && arr[7] == ControlMessages.WINDOW_ACK_SIZE) {
+			sendStreamBegin();
+			parseRemaineder(arr,message,headerSize);
+		}
+
+	}
+	private void onCreateStream() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	private void onPlay() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	private void parseRemaineder(byte [] arr, byte [] message,int headerSize) throws IOException, ChunkException, UnsupportedFeature{
+		if (arr.length > message.length + headerSize+1){
+			byte [] left = new byte[arr.length-message.length+1];
+			System.arraycopy(arr, message.length + headerSize, left, 0, left.length);
+			parse(left);
+			return;
+		}
+	}
+	private void sendStreamBegin() throws ChunkException, UnsupportedFeature, IOException {
+		System.out.println(">>> SENDING STREAM BIGIN >>>"); // in the sniffer
+		// this message is
+		// identified by
+		// ping :P
+		byte[] ping = ControlMessages.userControlMessage(timestamp, Utils
+				.intToByteArray(streamID), ControlMessages.STREAM_BEGIN);
+		Utils.printStream(ping);
+		out.write(ping);
+		System.out.println(">>> SENDING STREAM BIGIN - END >>>");
+
+		System.out.println(">>> SENDING _Result >>>");
+		byte[] result = Utils.readFile("objects/result_flazer");
+		Utils.printStream(result);
+		out.write(result);
+		System.out.println(">>> END OF SENDING _Result >>>\n\n\n");
+
+		System.out.println(">>> SENDING BW_DONE >>>");
+		byte[] bwDone = Utils.readFile("objects/bw_done");
+		Utils.printStream(bwDone);
+		out.write(bwDone);
+		System.out.println(">>> END OF SENDING BW_DONE >>>\n\n\n");
+		
+		System.out.println("\n\n>>> SENDING RESULT MESSAGE >>>");
+		byte[] resultMessage = Utils.readFile("objects/result_flazer2");
+		Utils.printStream(resultMessage);
+		out.write(resultMessage);
+		System.out.println(">>> END OF RESULT MESSAGE >>>");
+
+		
+	}
+
+	private void onConnect() throws IOException, ChunkException, UnsupportedFeature {
+		System.out.println(">>> Sending Window Ack (SERVER BW) >>>");
+		byte[] windowAck = ControlMessages.windowAck(windowSize, timestamp);
+		Utils.printStream(windowAck);
+		out.write(windowAck);
+		System.out.println(">>> Sending Window Ack (SERVER BW) END >>>");
+		System.out.println(">>> SENDING SET PEER BW >>>");
+		byte[] windowMessage = ControlMessages.peerBW(windowSize, timestamp);
+		Utils.printStream(windowMessage);
+		out.write(windowMessage);
+		System.out.println(">>> SENDING SET PEER BW END >>>");
+	}
+
+	private int getHeaderSize(int headerNumber) {
+		int headerSize;
+		if (headerNumber == 0)
+			headerSize = 12;
+		else if (headerNumber == 1)
+			headerSize = 8;
+		else if (headerNumber == 2)
+			headerSize = 4;
+		else
+			headerSize = 1;
+		return headerSize;
+	}
+
+	private void sendVideo(String string) throws IOException, ChunkException,
+			UnsupportedFeature, InterruptedException {
+		FlvDemux dem = new FlvDemux("9.flv");
+		FLVTag tag = dem.getNextVideoTag();
+
+		do {
+
+			byte[] header = ChunkCreator.createChunk(5, 0, tag.getTimeStamp(),
+					tag.getDataSize(), (byte) tag.getTagType(), createStreamID);
+			byte[] data = tag.getData();
+			try {
+				out.write(header);
+				out.write(data);
+			} catch (Exception e) {
+				e.printStackTrace();
+				return;
+			}
+
+			Thread.sleep(20);
+			// Listening for client (for responses).
+			byte[] arr = new byte[in.available()];
+			if (arr.length > 0) {
+				in.read(arr);
+				Utils.printStream(arr);
+			}
+
+			tag = dem.getNextVideoTag();
+		} while (tag != null);
+
+	}
+
+	private void initConnection() throws IOException {
+		clientSocket = null;
 		try {
 			System.out.println("Listening...");
 			clientSocket = serverSocket.accept();
@@ -56,264 +244,43 @@ public class Server {
 			System.err.println("Accept failed.");
 			System.exit(1);
 		}
-		OutputStream out = clientSocket.getOutputStream();
-		InputStream in = clientSocket.getInputStream();
+		out = clientSocket.getOutputStream();
+		in = clientSocket.getInputStream();
+	}
 
+	private void handshake() throws IOException {
 		int c0 = in.read();
 		System.out.println("C0 read");
 		System.out.println("C0 = " + c0);
 
 		byte[] c1 = new byte[in.available()];
 		in.read(c1);
-		//Utils.printStream(c1);
 		System.out.println("c1 read: " + c1.length + " bytes.");
-		
-		//RTMPHandshake hs = new RTMPHandshake();
+
 		out.write(3);
-		byte [] s1 = new byte[1536];//hs.generateResponse(in);
+		byte[] s1 = new byte[1536];
 		Random randomizer = new Random();
 		randomizer.nextBytes(s1);
-		for (int i=0 ; i<8 ; i++)
+		for (int i = 0; i < 8; i++)
 			s1[i] = 0;
-		
+
 		out.write(s1);
-		
-		byte [] s2 = c1;
-		for (int i=4 ; i<8 ; i++)
+
+		byte[] s2 = c1;
+		for (int i = 4; i < 8; i++)
 			s2[i] = 0;
-		
+
 		out.write(s2);
-		//out.write(Utils.readFile("wowoza/hs"));
-		//System.out.println("Handshake sent"+" size = "+handshake.length);
 
 		Utils.waitForStream(in);
 		byte[] c2 = new byte[1536];
 		System.out.println("No of bytes in c2:" + in.read(c2));
 		System.out.println("C2 read");
-		//Utils.printStream(c2);
-
-		
-		System.out.println(" =================== HANDSHAKE DONE =======================");
-		
-
-		Utils.waitForStream(in);
-		byte[] arr = new byte[in.available()];
-		in.read(arr);
-		System.out.println("<<< CONNECT MESSAGE START <<<");
-		Utils.printStream(arr);
-		System.out.println(arr.length + " bytes were read");
-		String msg = new String(arr);
-		System.out.println("<<< CONNECT MESSAGE END <<<");
-
-		System.out.println(">>> Sending Window Ack (SERVER BW) >>>");
-		byte [] windowAck = ControlMessages.windowAck(2500000, timestamp);
-		Utils.printStream(windowAck);
-		out.write(windowAck);
-		System.out.println(">>> Sending Window Ack (SERVER BW) END >>>");
-		System.out.println(">>> SENDING SET PEER BW >>>");
-		byte [] windowMessage = ControlMessages.peerBW(2500000, timestamp);
-		Utils.printStream(windowMessage);
-		out.write(windowMessage);
-		System.out.println(">>> SENDING SET PEER BW END >>>");
-
-		
-			System.out.println("<<< WINDOW ACK <<<");
-			Utils.waitForStream(in);
-			arr = new byte[in.available()];
-			in.read(arr);
-			Utils.printStream(arr);
-			System.out.println(arr.length + " bytes were read");
-			msg = new String(arr);
-			System.out.println("<<< WINDOW ACK <<<\n\n");
-			
-			
-		
-			System.out.println(">>> SENDING STREAM BIGIN >>>"); // in the sniffer this message is identified by ping :P
-			byte [] ping = ControlMessages.userControlMessage(timestamp, Utils.intToByteArray(streamID) , ControlMessages.STREAM_BEGIN);
-			Utils.printStream(ping);
-			out.write(ping);
-			System.out.println(">>> SENDING STREAM BIGIN - END >>>");
-			
-			/*
-			System.out.println("\n\n>>> SENDING SET CHUNK SIZE >>>");
-			byte [] setChunkSize = ControlMessages.setChunkSize(65536, timestamp);
-			Utils.printStream(setChunkSize);
-			out.write(setChunkSize);
-			System.out.println(">>> END OF SET CHUNK SIZE >>>\n\n\n");
-			*/
-			
-			System.out.println(">>> SENDING _Result >>>");
-			byte [] result = Utils.readFile("objects/result_flazer");
-			Utils.printStream(result);
-			out.write(result);
-			System.out.println(">>> END OF SENDING _Result >>>\n\n\n");
-			
-			
-			System.out.println(">>> SENDING BW_DONE >>>");
-			byte [] bwDone = Utils.readFile("objects/bw_done");
-			Utils.printStream(bwDone);
-			out.write(bwDone);
-			System.out.println(">>> END OF SENDING BW_DONE >>>\n\n\n");
-
-			
-		
-			
-			System.out.println("\n<<< createStream start <<<");
-			Utils.waitForStream(in);
-			arr = new byte[in.available()];
-			in.read(arr);
-			Utils.printStream(arr);
-			System.out.println(arr.length + " bytes were read");
-			msg = new String(arr);
-			
-			System.out.println("<<< createStream End <<<");
-			
-			
-			System.out.println("\n\n>>> SENDING RESULT MESSAGE >>>");
-			byte [] resultMessage = Utils.readFile("objects/result_flazer2");
-			Utils.printStream(resultMessage);
-			out.write(resultMessage);
-			System.out.println(">>> END OF RESULT MESSAGE >>>");
-
-			
-			
-			System.out.println("\n\n<<< play message <<<");
-			Utils.waitForStream(in);
-			arr = new byte[in.available()];
-			in.read(arr);
-			Utils.printStream(arr);
-			System.out.println(arr.length + " bytes were read");
-			msg = new String(arr);
-			System.out.println("\n\n<<< play message End <<<");
-			
-			System.out.println("\n\n>>> SENDING SET CHUNK SIZE >>>");
-			byte [] setChunkSize = ControlMessages.setChunkSize(65536, timestamp);
-			Utils.printStream(setChunkSize);
-			out.write(setChunkSize);
-			System.out.println(">>> END OF SET CHUNK SIZE >>>\n\n\n");
-
-			
-			System.out.println("\n\n>>> SENDING stream is recorded >>>");
-			byte [] streamRecorded = ControlMessages.userControlMessage(timestamp, Utils.intToByteArray(createStreamID), ControlMessages.STREAM_IS_RECORDED);
-			Utils.printStream(streamRecorded);
-			out.write(streamRecorded);
-			System.out.println(">>> END SENDING stream is recorded >>>");
-			
-			System.out.println("\n\n>>> SENDING stream begin >>>");
-			byte [] streamBegin = ControlMessages.userControlMessage(timestamp, Utils.intToByteArray(createStreamID), ControlMessages.STREAM_BEGIN);
-			Utils.printStream(streamBegin);
-			out.write(streamBegin);
-			System.out.println(">>> END SENDING stream is begin >>>");
-			
-			
-			System.out.println("\n\n>>> SENDING onStatus1 >>>");
-			byte [] onStatus = Utils.readFile("objects/onstatus1");
-			Utils.printStream(onStatus);
-			out.write(onStatus);
-			System.out.println(">>> END OF onStatus1 >>>");
-			
-			
-			
-			System.out.println("\n\n>>> SENDING onStatus2 >>>");
-			byte [] onStatus2 = Utils.readFile("objects/onstatus2");
-			Utils.printStream(onStatus2);
-			out.write(onStatus2);
-			System.out.println(">>> END OF onStatus2 >>>");
-			/*
-			System.out.println("\n\n>>> SENDING RTMP SAMPLE ACCESS >>>");
-			byte [] sampleAccess = Utils.readFile("wowoza/notify");
-			Utils.printStream(sampleAccess);
-			out.write(sampleAccess);
-			System.out.println(">>> END RTMP SAMPLE ACCESS >>>");
-			
-			System.out.println("\n\n>>> SENDING OBJECT 8 >>>");
-			byte [] object8 = Utils.readFile("objects/objec8");
-			Utils.printStream(object8);
-			out.write(object8);
-			System.out.println(">>> END OBJECT 8 >>>");
-			
-			
-			System.out.println("\n\n>>> Sending onStatus 3 >>>");
-			byte [] onStatus3 = Utils.readFile("objects/onstatus3");
-			Utils.printStream(onStatus3);
-			out.write(onStatus3);
-			System.out.println(">>> END of onStatus 3 >>>");
-			
-			
-			System.out.println("\n\n>>> Sending onMetaData >>>");
-			byte [] onMetaData = Utils.readFile("objects/onmetadata");
-			Utils.printStream(onMetaData);
-			out.write(onMetaData);
-			System.out.println(">>> END of onMetaData >>>");
-			
-			System.out.println("\n\n>>> Sending xml >>>");
-			byte [] xml = Utils.readFile("objects/xml");
-			Utils.printStream(xml);
-			out.write(xml);
-			System.out.println(">>> END of xml >>>");
-			
-			System.out.println("\n\n>>> Sending 1 >>>");
-			byte [] byte1 = Utils.readFile("objects/1");
-			Utils.printStream(byte1);
-			out.write(byte1);
-			System.out.println(">>> END of 1 >>>");
-			
-			System.out.println("\n\n>>> Sending unkown >>>");
-			byte [] un = Utils.readFile("objects/unkown");
-			Utils.printStream(un);
-			out.write(un);
-			System.out.println(">>> END of unkown >>>");
-			out.write(Utils.readFile("objects/2"));
-			out.write(Utils.readFile("objects/3"));
-			out.write(Utils.readFile("objects/4"));
-			out.write(Utils.readFile("objects/5"));
-			out.write(Utils.readFile("objects/6"));
-			out.write(Utils.readFile("objects/7"));
-				arr = new byte[in.available()];
-				in.read(arr);
-			Utils.printStream(arr);
-	*/
-			//	break;
-			//}
-
-		//}
-
-		FlvDemux dem = new FlvDemux("9.flv");
-		FLVTag tag= dem.getNextVideoTag();
-		
-		
-		do {
-			
-			byte [] header = ChunkCreator.createChunk(5, 0, tag.getTimeStamp(), tag.getDataSize(), (byte)tag.getTagType(), createStreamID);
-			byte [] data = tag.getData();
-			try {
-				out.write(header);
-				out.write(data);
-			} catch (Exception e) {
-				e.printStackTrace();
-				return;
-			}
-			
-			Thread.sleep(40);
-			// Listening for client (for responses).
-			arr = new byte[in.available()];
-			if (arr.length > 0){
-				in.read(arr);
-				Utils.printStream(arr);
-				//Thread.sleep(5000);
-			}
-			
-			tag = dem.getNextVideoTag();
-		} while (tag !=null);
-
-		out.close();
-		in.close();
-		clientSocket.close();
-		serverSocket.close();
 	}
 
 	public static void main(String args[]) throws UnknownHostException,
-			IOException, InterruptedException, ChunkException, UnsupportedFeature {
+			IOException, InterruptedException, ChunkException,
+			UnsupportedFeature {
 		Server server = new Server();
 		while (true) {
 			try {

@@ -169,18 +169,7 @@ public class FlvDemux {
 		System.out.println(byteArrayToInt(tmp, 0));
 		FlvDemux demux = new FlvDemux("sample.flv");
 		
-		int i = 0;
 		FLVTag tag = demux.getNextVideoTag();
 		Utils.printStream(tag.getData());
-		//while (tag!=null){
-		// System.out.println("\n\n\n\nTag number "+i)
-		//tag = demux.getNextVideoTag();
-		//}
-		// Thread.sleep(1000);
-		// i++;
-		// }
-
-		// System.out.println(tag.data[i]);
-
 	}
 }

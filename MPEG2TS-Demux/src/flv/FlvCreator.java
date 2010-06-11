@@ -4,10 +4,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-import demux.Demultiplexer;
 import demux.FLVTag;
 import demux.FlvDemux;
-import demux.Frame;
 
 public class FlvCreator {
 	File file = null;

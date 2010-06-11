@@ -1,9 +1,13 @@
 package utilities;
 
+import static org.junit.Assert.fail;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+
+import org.junit.Test;
 
 public class Utils {
 	
@@ -29,17 +33,7 @@ public class Utils {
 		while (is.available() == 0) {}
 	}
 	
-	/**
-	 * Returns a byte array containing the two's-complement representation of the integer.<br>
-	 * The byte array will be in big-endian byte-order with a fixes length of 4
-	 * (the least significant byte is in the 4th element).<br>
-	 * <br>
-	 * <b>Example:</b><br>
-	 * <code>intToByteArray(258)</code> will return { 0, 0, 1, 2 },<br>
-	 * <code>BigInteger.valueOf(258).toByteArray()</code> returns { 1, 2 }. 
-	 * @param integer The integer to be converted.
-	 * @return The byte array of length 4.
-	 */
+
 	public static byte[] intToByteArray (final int integer) {
 		int byteNum = (40 - Integer.numberOfLeadingZeros (integer < 0 ? ~integer : integer)) / 8;
 		byte[] byteArray = new byte[4];
@@ -50,11 +44,33 @@ public class Utils {
 		return (byteArray);
 	}
 	
-	 public static void writeInt32Reverse(byte [] arr4, final int value) {
-	        arr4[0] = ((byte) (0xFF & value));
-	        arr4[1] = ((byte) (0xFF & (value >> 8)));
-	        arr4[2] = ((byte) (0xFF & (value >> 16)));
-	        arr4[3] = ((byte) (0xFF & (value >> 24)));
+	
+	 public static void writeInt32Reverse(byte [] arr, int x) {
+	        arr[0] = ((byte) (0xFF & x));
+	        arr[1] = ((byte) (0xFF & (x >> 8)));
+	        arr[2] = ((byte) (0xFF & (x >> 16)));
+	        arr[3] = ((byte) (0xFF & (x >> 24)));
 	    }
+	 
+	 
+	 public static int byteArrayToInt(byte[] arr) {
+	        int x = 0;
+	        for (int i = 0; i < 4; i++) {
+	            int shift = (4 - 1 - i) * 8;
+	            x += (arr[i] & 0xFF) << shift;
+	        }
+	        return x;
+	    }
+
+	 @Test
+	 public void test1(){
+		 byte [] b = new byte[4];
+		 b[0] = (byte) 0x00;
+		 b[1] = (byte) 0xFF;
+		 b[2] = (byte) 0x5C;
+		 b[3] = (byte) 0xDE;
+		 if (16735454 != byteArrayToInt(b))
+			 fail();
+	 }
 	
 }
