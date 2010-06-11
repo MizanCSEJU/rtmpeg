@@ -108,7 +108,7 @@ public class Server {
 		int size = utilities.Utils.byteArrayToInt(messageLengthArr);
 		byte [] message = new byte[size];
 		
-		if (headerSize == 12 && (arr[0] & 0xF) == 3 && arr[7] == FUNCTION_CALL ) { // AMF message Function Call
+		if (headerSize == 12 && ((arr[0] & 0xF) == 3 || arr[0] == 8) && arr[7] == FUNCTION_CALL ) { // AMF message Function Call
 			
 			System.arraycopy(arr, headerSize, message, 0, size);
 			String messageContent = new String(message);
@@ -124,6 +124,11 @@ public class Server {
 		else if (headerSize == 12 && arr[7] == ControlMessages.WINDOW_ACK_SIZE) {
 			sendStreamBegin();
 			parseRemaineder(arr,message,headerSize);
+		}
+		else {
+			String s = new String(arr);
+			if (s.indexOf("play")!=-1)
+				onPlay();
 		}
 
 	}
