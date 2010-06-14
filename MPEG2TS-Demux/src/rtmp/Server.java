@@ -146,6 +146,15 @@ public class Server {
 
 	}
 
+	/**
+	 * Parses the remainder of a client message.
+	 * @param arr
+	 * @param message
+	 * @param headerSize
+	 * @throws IOException
+	 * @throws ChunkException
+	 * @throws UnsupportedFeature
+	 */
 	private void parseRemaineder(byte[] arr, byte[] message, int headerSize)
 			throws IOException, ChunkException, UnsupportedFeature {
 		if (arr.length > message.length + headerSize + 1) {
@@ -157,6 +166,12 @@ public class Server {
 		}
 	}
 
+	/**
+	 * Sends the stream begin command to the client.
+	 * @throws ChunkException
+	 * @throws UnsupportedFeature
+	 * @throws IOException
+	 */
 	private void sendStreamBegin() throws ChunkException, UnsupportedFeature,
 			IOException {
 		System.out.println(">>> SENDING STREAM BIGIN >>>"); // in the sniffer
@@ -189,6 +204,12 @@ public class Server {
 
 	}
 
+	/**
+	 * On connect sendings.
+	 * @throws IOException
+	 * @throws ChunkException
+	 * @throws UnsupportedFeature
+	 */
 	private void onConnect() throws IOException, ChunkException,
 			UnsupportedFeature {
 		System.out.println(">>> Sending Window Ack (SERVER BW) >>>");
@@ -203,6 +224,11 @@ public class Server {
 		System.out.println(">>> SENDING SET PEER BW END >>>");
 	}
 
+	/**
+	 * 
+	 * @param headerNumber
+	 * @return headerSize
+	 */
 	private int getHeaderSize(int headerNumber) {
 		int headerSize;
 		if (headerNumber == 0)
@@ -216,9 +242,17 @@ public class Server {
 		return headerSize;
 	}
 
-	private void sendVideo(String string) throws IOException, ChunkException,
+	/**
+	 * Sends the video.
+	 * @param filename
+	 * @throws IOException
+	 * @throws ChunkException
+	 * @throws UnsupportedFeature
+	 * @throws InterruptedException
+	 */
+	private void sendVideo(String filename) throws IOException, ChunkException,
 			UnsupportedFeature, InterruptedException {
-		FlvDemux dem = new FlvDemux("9.flv");
+		FlvDemux dem = new FlvDemux(filename);
 		FLVTag tag = dem.getNextVideoTag();
 
 		do {
@@ -247,6 +281,10 @@ public class Server {
 
 	}
 
+	/**
+	 * Initializes the TCP connection.
+	 * @throws IOException
+	 */
 	private void initConnection() throws IOException {
 		clientSocket = null;
 		try {
@@ -262,6 +300,11 @@ public class Server {
 		in = clientSocket.getInputStream();
 	}
 
+	/**
+	 * Makes the initial handshake.
+	 * Recieves C0,C1,C2 and sends S0,S1,S2 according to the RTMP protocol.
+	 * @throws IOException
+	 */
 	private void handshake() throws IOException {
 		int c0 = in.read();
 		System.out.println("C0 read");
