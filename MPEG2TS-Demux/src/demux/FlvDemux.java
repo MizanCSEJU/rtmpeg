@@ -6,16 +6,32 @@ import java.io.IOException;
 
 import utilities.Utils;
 
+/**
+ * FLV Demultiplexer.
+ * Receives as an input an FLV file and returns FLV packets.
+ * 
+ * @author Elias Khsheibun
+ *
+ */
 public class FlvDemux {
 	private FileInputStream is;
 	File file = null;
 	
+	/**
+	 * Constructor
+	 * @param filename - the file name of the FLV (in the main directory).
+	 * @throws IOException
+	 */
 	public FlvDemux(String filename) throws IOException {
 		file = new File(filename);
 		is = new FileInputStream(file);
 		readHeader();
 	}
 
+	/**
+	 * Reads the FLV header.
+	 * @throws IOException
+	 */
 	public void readHeader() throws IOException {
 		byte signatureA = (byte) is.read();
 		if (signatureA != 0x46)
@@ -53,7 +69,13 @@ public class FlvDemux {
 				System.err.println("Error in tag 0");
 
 	}
-
+	
+	/**
+	 * Reads a tag and determines its type.
+	 * @return FLVTag that was read.
+	 * @see FLVTag
+	 * @throws IOException
+	 */
 	private FLVTag processFLVTag() throws IOException {
 		int tagType = is.read();
 		switch (tagType) {
@@ -110,31 +132,38 @@ public class FlvDemux {
 	}
 
 	/**
-	 * Convert the byte array to an int starting from the given offset.
-	 * 
-	 * @param b
-	 *            The byte array
-	 * @param offset
-	 *            The array offset
-	 * @return The integer
+	 * Converts byteArray to int.
+	 * @param arr - the array
+	 * @param offset - the start offset of the conversion
+	 * @return
 	 */
-
-	public static int byteArrayToInt(char[] b, int offset) {
-		int value = 0;
-		for (int i = 0; i < 4; i++) {
-			int shift = (4 - 1 - i) * 8;
-			value += (b[i + offset] & 0x000000FF) << shift;
+	public static int byteArrayToInt(char[] arr, int offset) {
+		int x = 0;
+		for (int i = 0; i<4; i++) {
+			int shift = (3-i) * 8;
+			x += (arr[i+offset] & 0xFF) << shift;
 		}
-		return value;
+		return x;
 	}
 
+	/**
+	 * 
+	 * @return next flv tag available - when reaching EOF returns null.
+	 * @see FLVTag
+	 * @throws IOException
+	 */
 	public FLVTag getNextTag() throws IOException {
 		FLVTag tag = processFLVTag();
 		if (!readPrevTag())
 			return null;
 		return tag;
 	}
-
+	
+	/**
+	 * Reads the previous tag header.
+	 * @return true if prev tag was available, false otherwise.
+	 * @throws IOException
+	 */
 	private boolean readPrevTag() throws IOException {
 		if (is.available() < 1)
 			return false;
@@ -145,6 +174,11 @@ public class FlvDemux {
 		return true;
 	}
 
+	/**
+	 * 
+	 * @return next available video tag. (Identified by type 9).
+	 * @throws IOException
+	 */
 	public FLVTag getNextVideoTag() throws IOException {
 		FLVTag tag = processFLVTag();
 		if (tag.tagType == 9) {

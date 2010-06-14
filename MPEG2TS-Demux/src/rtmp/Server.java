@@ -19,8 +19,11 @@ import utilities.Utils;
 
 import java.util.Random;
 
-import javax.swing.text.Utilities;
-
+/**
+ * RTMP Server side implementation.
+ * @author Elias
+ *
+ */
 public class Server {
 
 	private static final byte FUNCTION_CALL = 0x14;
@@ -40,7 +43,11 @@ public class Server {
 			IOException {
 		init();
 	}
-
+	
+	/**
+	 * Initializes the server (used by the constructor).
+	 * @throws InterruptedException
+	 */
 	private void init() throws InterruptedException {
 		try {
 			serverSocket = new ServerSocket(port);
@@ -53,7 +60,16 @@ public class Server {
 		}
 	}
 
-	void run() throws UnknownHostException, IOException, InterruptedException,
+	/**
+	 * Runs the server.
+	 * @String the filename to send.
+	 * @throws UnknownHostException
+	 * @throws IOException
+	 * @throws InterruptedException
+	 * @throws ChunkException
+	 * @throws UnsupportedFeature
+	 */
+	void run(String filename) throws UnknownHostException, IOException, InterruptedException,
 			ChunkException, UnsupportedFeature {
 
 		initConnection();
@@ -66,7 +82,7 @@ public class Server {
 		out.write(setChunkSize);
 		System.out.println(">>> END OF SET CHUNK SIZE >>>\n\n\n");
 
-		sendVideo("9.flv");
+		sendVideo(filename);
 
 		out.close();
 		in.close();
@@ -282,10 +298,10 @@ public class Server {
 		Server server = new Server();
 		while (true) {
 			try {
-				server.run();
+				server.run("9.flv");
 			} catch (Exception e) {
 				e.printStackTrace();
-				server.run();
+				server.run("9.flv");
 			}
 		}
 	}

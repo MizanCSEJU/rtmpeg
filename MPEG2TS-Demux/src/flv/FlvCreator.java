@@ -7,11 +7,21 @@ import java.io.IOException;
 import demux.FLVTag;
 import demux.FlvDemux;
 
+/**
+ * Given Flv tags, creates an Flv file.
+ * @author Elias
+ *
+ */
 public class FlvCreator {
 	File file = null;
 	FileOutputStream os = null;
 	int previousTagSize = 0;
 
+	/**
+	 * Constructor
+	 * @param filename - in main directory.
+	 * @throws IOException
+	 */
 	public FlvCreator(String filename) throws IOException {
 		file = new File(filename);
 		if (file.exists())
@@ -19,7 +29,13 @@ public class FlvCreator {
 		file.createNewFile();
 		os = new FileOutputStream(file);
 	}
-
+	
+	/**
+	 * Writes the FLV header as in the FLV Spec.
+	 * @param audio - should be set true if audio is available.
+	 * @param video - should be set true if video is available
+	 * @throws IOException
+	 */
 	private void writeHeader(boolean audio, boolean video) throws IOException {
 		os.write(0x46); // F
 		os.write(0x4c); // L
@@ -37,11 +53,26 @@ public class FlvCreator {
 		os.write(offset);
 	}
 
+	/**
+	 * Writes the PrevTagSize as in the FLV standard.
+	 * @throws IOException
+	 */
 	private void writePrevTagSize() throws IOException {
 		byte[] prevTagSize = utilities.Utils.intToByteArray(previousTagSize);
 		os.write(prevTagSize);
 	}
 
+	/**
+	 * Writes the FLVTag Data.
+	 * @param tagType - 9 for video, 8 for audio.
+	 * @param dataSize
+	 * @param timeStamp
+	 * @param timeStampExtended
+	 * @param data
+	 * @param metadata
+	 * @see FLV Standard.
+	 * @throws IOException
+	 */
 	private void writeFlvTag(byte tagType, int dataSize, int timeStamp,
 			byte timeStampExtended, byte[] data, boolean metadata)
 			throws IOException {
@@ -67,6 +98,10 @@ public class FlvCreator {
 		previousTagSize = dataSize + 1 + 11;
 	}
 
+	/**
+	 * Writes FrameType + Codec for video tags.
+	 * @throws IOException
+	 */
 	private void writeMetaData() throws IOException {
 		os.write(20); // FrameType + Codec
 		os.write(0); // AVCPacketType

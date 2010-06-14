@@ -238,40 +238,6 @@ public class Demultiplexer {
 			System.out.println("Frame :"+(i++)+" timestamp: "+f.getTimeStamp());
 		}while ((f=demux.getNext())!=null);
 		
-		//demux = new Demultiplexer(file);
-		
-		/*
-		byte[] b = null;
-		for (int i = 0; i < file.length() / packetSize; i++) {
-			b = demux.getNextTSPacket();
-			if (TSutils.isStartOfPES(b))
-			System.out.println(TSutils.getDTS(b));
-		}*/
-
-		
-		/*
-		int counter2 = 0;
-		while (demux.getNext() != null)
-			counter2++;
-		System.out.println("No of PES packets produced " + counter2);
-
-		int counter = 0;
-		int pesCounter = 0;
-		System.out.println("The length of the file in bytes: " + file.length());
-		demux = new Demultiplexer(file);
-		byte[] b = null;
-		for (int i = 0; i < file.length() / packetSize; i++) {
-			b = demux.getNextTSPacket();
-			if (TSutils.isStartOfPES(b) && TSutils.getPID(b) == H264PID)
-				pesCounter++;
-			if (TSutils.getPID(b) == H264PID)
-				counter++;
-		}
-		System.out.println("No of PES packets: " + pesCounter);
-		System.out.println("No of frames read: " + packetNum);
-		System.out.println("No of frames with PID = " + H264PID + " is: "
-				+ counter);
-		*/
 	}
 
 }

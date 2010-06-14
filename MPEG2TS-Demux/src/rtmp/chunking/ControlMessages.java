@@ -18,7 +18,14 @@ public class ControlMessages {
 	
 
 
-	
+	/**
+	 * Creates the setChunkSize control message
+	 * @param chunkSize
+	 * @param timestamp
+	 * @return byte[] network order - setChunkSize control message
+	 * @throws ChunkException
+	 * @throws UnsupportedFeature
+	 */
 	public static byte [] setChunkSize(int chunkSize,int timestamp) throws ChunkException, UnsupportedFeature{
 		if (chunkSize < 0 || chunkSize > 65536)
 			throw new ChunkException();
@@ -32,6 +39,14 @@ public class ControlMessages {
 		return data;
 	}
 	
+	/**
+	 * Creates the ack control message.
+	 * @param sequenceNumber
+	 * @param timestamp
+	 * @return byte [] network order - ack control message.
+	 * @throws ChunkException
+	 * @throws UnsupportedFeature
+	 */
 	public static byte [] ack(int sequenceNumber,int timestamp) throws ChunkException, UnsupportedFeature{
 		
 		byte [] chunk = ChunkCreator.createChunk(chunkStreamID, 0, timestamp, 4, ACK, messageStreamID);
@@ -43,6 +58,14 @@ public class ControlMessages {
 		return data;
 	}
 	
+	/**
+	 * Creates the windowAck control message
+	 * @param ackWindow
+	 * @param timestamp
+	 * @return byte[] network order - the windowAck control message.
+	 * @throws ChunkException
+	 * @throws UnsupportedFeature
+	 */
 	public static byte [] windowAck(int ackWindow,int timestamp) throws ChunkException, UnsupportedFeature{
 		
 		byte [] chunk = ChunkCreator.createChunk(chunkStreamID, 0, timestamp, 4, WINDOW_ACK_SIZE, messageStreamID);
@@ -54,6 +77,14 @@ public class ControlMessages {
 		return data;
 	}
 	
+	/**
+	 * Creates the peerBW control message
+	 * @param ackWindow
+	 * @param timestamp
+	 * @return byte[] network order - the peerBW control message.
+	 * @throws ChunkException
+	 * @throws UnsupportedFeature
+	 */
 	public static byte [] peerBW(int ackWindow,int timestamp) throws ChunkException, UnsupportedFeature{
 		
 		byte [] chunk = ChunkCreator.createChunk(chunkStreamID, 0, timestamp, 5, SET_PEER_BW, messageStreamID);
@@ -65,6 +96,15 @@ public class ControlMessages {
 		return data;
 	}
 	
+	/**
+	 * A generic user control message - should specify the correct eventData.
+	 * @param timestamp
+	 * @param eventData
+	 * @param event
+	 * @return A generic user control message.
+	 * @throws ChunkException
+	 * @throws UnsupportedFeature
+	 */
 	public static byte [] userControlMessage(int timestamp,byte [] eventData,int event) throws ChunkException, UnsupportedFeature{
 		
 		byte [] eventArray = utilities.Utils.intToByteArray(event);

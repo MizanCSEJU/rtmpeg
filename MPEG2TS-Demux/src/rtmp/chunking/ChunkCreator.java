@@ -1,6 +1,23 @@
 package rtmp.chunking;
 
+/**
+ * Chuncking creator as in rtmp standard.
+ * @author Elias
+ *
+ */
 public class ChunkCreator {
+	/**
+	 * Creates a chunk according to the 4 types that are defined in the standard.
+	 * @param chunkStreamID
+	 * @param fmt
+	 * @param timestamp
+	 * @param messageLength
+	 * @param messageType
+	 * @param streamID
+	 * @return byte [] representing the created header.
+	 * @throws ChunkException
+	 * @throws UnsupportedFeature
+	 */
 	public static byte [] createChunk(int chunkStreamID,int fmt,int timestamp,int messageLength,byte messageType,int streamID) throws ChunkException, UnsupportedFeature{
 		
 		if (chunkStreamID < 2 || chunkStreamID > 65597 || fmt<0 || fmt>2)
@@ -65,6 +82,15 @@ public class ChunkCreator {
 		throw new UnsupportedFeature();
 	}
 
+	/**
+	 * Fills the chunk header of type 0.
+	 * @param chunkMessageHeader
+	 * @param timestamp
+	 * @param length
+	 * @param messageType
+	 * @param streamID
+	 * @throws UnsupportedFeature
+	 */
 	private static void fillChunkHeader0(byte[] chunkMessageHeader, int timestamp, int length,byte messageType,int streamID) throws UnsupportedFeature {
 		if (timestamp>16777215)
 			throw new UnsupportedFeature();

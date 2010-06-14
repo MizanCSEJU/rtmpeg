@@ -1,5 +1,10 @@
 package demux;
 
+/**
+ * Contains infromation regarding FLVTag as in the FLV spec.
+ * @author Elias
+ *
+ */
 public class FLVTag {
 	int tagType;
 	public FLVTag(int tagType, int dataSize, int timeStamp,
