@@ -5,10 +5,22 @@ import java.io.IOException;
 import demux.Demultiplexer;
 import demux.Frame;
 
+
+/**
+ * Encapsulates video messages in the required format.
+ * 
+ * Has a number of implementation to creating the video message.
+ * This is due to a number of ways that were defined in the RTMP spec.
+ * 
+ * @author Elias
+ *
+ */
 public class Serializer {
 	final static int headerSize = 7;
 	final static int videoData = 0x09;
 	final static int rtmpHeaderSize = 11;
+	
+	
 	public static byte[] createAMFVideoData(byte[] payload,int timestamp){
 		byte [] message = new byte[payload.length+headerSize];
 		byte [] payloadLength = Utils.intToByteArray(payload.length); //TODO if payload size is bigger than 3 bytes
