@@ -21,8 +21,9 @@ import java.util.Random;
 
 /**
  * RTMP Server side implementation.
+ * 
  * @author Elias
- *
+ * 
  */
 public class Server {
 
@@ -43,9 +44,10 @@ public class Server {
 			IOException {
 		init();
 	}
-	
+
 	/**
 	 * Initializes the server (used by the constructor).
+	 * 
 	 * @throws InterruptedException
 	 */
 	private void init() throws InterruptedException {
@@ -62,6 +64,7 @@ public class Server {
 
 	/**
 	 * Runs the server.
+	 * 
 	 * @String the filename to send.
 	 * @throws UnknownHostException
 	 * @throws IOException
@@ -69,8 +72,8 @@ public class Server {
 	 * @throws ChunkException
 	 * @throws UnsupportedFeature
 	 */
-	void run(String filename) throws UnknownHostException, IOException, InterruptedException,
-			ChunkException, UnsupportedFeature {
+	void run(String filename) throws UnknownHostException, IOException,
+			InterruptedException, ChunkException, UnsupportedFeature {
 
 		initConnection();
 		handshake();
@@ -148,6 +151,7 @@ public class Server {
 
 	/**
 	 * Parses the remainder of a client message.
+	 * 
 	 * @param arr
 	 * @param message
 	 * @param headerSize
@@ -168,6 +172,7 @@ public class Server {
 
 	/**
 	 * Sends the stream begin command to the client.
+	 * 
 	 * @throws ChunkException
 	 * @throws UnsupportedFeature
 	 * @throws IOException
@@ -206,6 +211,7 @@ public class Server {
 
 	/**
 	 * On connect sendings.
+	 * 
 	 * @throws IOException
 	 * @throws ChunkException
 	 * @throws UnsupportedFeature
@@ -244,6 +250,7 @@ public class Server {
 
 	/**
 	 * Sends the video.
+	 * 
 	 * @param filename
 	 * @throws IOException
 	 * @throws ChunkException
@@ -283,6 +290,7 @@ public class Server {
 
 	/**
 	 * Initializes the TCP connection.
+	 * 
 	 * @throws IOException
 	 */
 	private void initConnection() throws IOException {
@@ -301,8 +309,9 @@ public class Server {
 	}
 
 	/**
-	 * Makes the initial handshake.
-	 * Recieves C0,C1,C2 and sends S0,S1,S2 according to the RTMP protocol.
+	 * Makes the initial handshake. Recieves C0,C1,C2 and sends S0,S1,S2
+	 * according to the RTMP protocol.
+	 * 
 	 * @throws IOException
 	 */
 	private void handshake() throws IOException {
@@ -338,15 +347,12 @@ public class Server {
 	public static void main(String args[]) throws UnknownHostException,
 			IOException, InterruptedException, ChunkException,
 			UnsupportedFeature {
-		Server server = new Server();
-		while (true) {
-			try {
-				server.run("9.flv");
-			} catch (Exception e) {
-				e.printStackTrace();
-				server.run("9.flv");
-			}
+		if (args.length != 1) {
+			System.out
+					.println("Usage: java server <filename_in_current_directory>");
+			return;
 		}
+		Server server = new Server();
+		server.run(args[0]);
 	}
-
 }
