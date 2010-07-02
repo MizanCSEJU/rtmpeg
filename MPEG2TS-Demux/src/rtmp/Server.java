@@ -15,6 +15,7 @@ import rtmp.chunking.UnsupportedFeature;
 import demux.FLVTag;
 import demux.FlvDemux;
 
+import utilities.AMF;
 import utilities.Utils;
 
 import java.util.Random;
@@ -22,7 +23,6 @@ import java.util.Random;
 /**
  * RTMP Server side implementation.
  * 
- * @author Elias
  * 
  */
 public class Server {
@@ -39,6 +39,7 @@ public class Server {
 	private InputStream in;
 	private Socket clientSocket;
 	private boolean SENDING_ON = true;
+	private String fileName = null;
 
 	public Server() throws InterruptedException, UnknownHostException,
 			IOException {
@@ -72,8 +73,8 @@ public class Server {
 	 * @throws ChunkException
 	 * @throws UnsupportedFeature
 	 */
-	void run(String filename) throws UnknownHostException, IOException,
-			InterruptedException, ChunkException, UnsupportedFeature {
+	void run() throws UnknownHostException, IOException, InterruptedException,
+			ChunkException, UnsupportedFeature {
 
 		initConnection();
 		handshake();
@@ -85,8 +86,9 @@ public class Server {
 		out.write(setChunkSize);
 		System.out.println(">>> END OF SET CHUNK SIZE >>>\n\n\n");
 
-		sendVideo(filename);
-
+		if (fileName != null)
+			sendVideo(fileName);
+		
 		out.close();
 		in.close();
 		clientSocket.close();
@@ -100,6 +102,7 @@ public class Server {
 			Utils.waitForStream(in);
 			byte[] arr = new byte[in.available()];
 			in.read(arr);
+			Utils.printStream(arr);
 			parse(arr);
 		}
 	}
@@ -122,10 +125,8 @@ public class Server {
 			String messageContent = new String(message);
 			if (messageContent.indexOf("connect") != -1)
 				onConnect();
-			if (messageContent.indexOf("createStream") != -1)
-				onCreateStream();
 			if (messageContent.indexOf("play") != -1)
-				onPlay();
+				onPlay(arr);
 			parseRemaineder(arr, message, headerSize);
 		}
 
@@ -135,18 +136,15 @@ public class Server {
 		} else {
 			String s = new String(arr);
 			if (s.indexOf("play") != -1)
-				onPlay();
+				onPlay(arr);
 			SENDING_ON = false;
 		}
 
 	}
 
-	private void onCreateStream() {
+	private void onPlay(byte[] arr) {
 
-	}
-
-	private void onPlay() {
-
+		fileName = AMF.getFileName(arr);
 	}
 
 	/**
@@ -190,8 +188,15 @@ public class Server {
 		System.out.println(">>> SENDING STREAM BIGIN - END >>>");
 
 		System.out.println(">>> SENDING _Result >>>");
-		byte[] result = Utils.readFile("objects/result_flazer");
+		byte[] result = AMF.netConnectionResult();
+		System.out.println("XX");
+		byte[] r = ChunkCreator.createChunk(3, 0, 0, result.length, (byte) 0x14, 0);
+		Utils.printStream(r);
 		Utils.printStream(result);
+		Utils.printStream(Utils.readFile("objects/result_flazer"));
+		System.out.println("xx");
+		out.write(r);
+		
 		out.write(result);
 		System.out.println(">>> END OF SENDING _Result >>>\n\n\n");
 
@@ -347,12 +352,8 @@ public class Server {
 	public static void main(String args[]) throws UnknownHostException,
 			IOException, InterruptedException, ChunkException,
 			UnsupportedFeature {
-		if (args.length != 1) {
-			System.out
-					.println("Usage: java server <filename_in_current_directory>");
-			return;
-		}
+
 		Server server = new Server();
-		server.run(args[0]);
+		server.run();
 	}
 }
