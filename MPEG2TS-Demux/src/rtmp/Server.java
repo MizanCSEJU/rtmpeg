@@ -189,14 +189,8 @@ public class Server {
 
 		System.out.println(">>> SENDING _Result >>>");
 		byte[] result = AMF.netConnectionResult();
-		System.out.println("XX");
-		byte[] r = ChunkCreator.createChunk(3, 0, 0, result.length, (byte) 0x14, 0);
-		Utils.printStream(r);
-		Utils.printStream(result);
-		Utils.printStream(Utils.readFile("objects/result_flazer"));
-		System.out.println("xx");
-		out.write(r);
-		
+		byte[] header = ChunkCreator.createChunk(3, 0, 0, result.length-1, (byte) 0x14, 0);
+		out.write(header);
 		out.write(result);
 		System.out.println(">>> END OF SENDING _Result >>>\n\n\n");
 
