@@ -49,7 +49,7 @@ public class AMF {
 		addString(out, "description",false);
 		addString(out, "Connection succeeded.",true);
 		addString(out, "fmsVer", false);
-		addString(out, "FMS/3,5,1,516", true);
+		addString(out, "FMS/Ã3,5,1,516", true);
 		addString(out, "capabilities", false);
 		addNumber(out, 31.0);
 		addString(out,"mode",false);
@@ -57,9 +57,31 @@ public class AMF {
 		addString(out,"objectEncoding", false);
 		addNumber(out, 0);
 		endObject(out);
-		Utils.printStream(o.toByteArray());
+		
 		return o.toByteArray();
 	}
+	
+	public static byte[] onBWDone(){
+		ByteArrayOutputStream o = new ByteArrayOutputStream();
+		DataOutputStream out = new DataOutputStream(o);
+		addString(out, "onBWDone", true);
+		addNumber(out, 0);
+		addNULL(out);
+		
+		return o.toByteArray();
+	}
+	
+	public static byte[] resultMessage(){
+		
+		ByteArrayOutputStream o = new ByteArrayOutputStream();
+		DataOutputStream out = new DataOutputStream(o);
+		addString(out, "_result",true);
+		addNumber(out, 2);
+		addNULL(out);
+		addNumber(out, 1);
+		
+		return o.toByteArray();
+		}
 
 	private static void newObject(DataOutputStream out) {
 

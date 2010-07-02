@@ -189,20 +189,23 @@ public class Server {
 
 		System.out.println(">>> SENDING _Result >>>");
 		byte[] result = AMF.netConnectionResult();
-		byte[] header = ChunkCreator.createChunk(3, 0, 0, result.length-1, (byte) 0x14, 0);
-		out.write(header);
+		byte[] resultHeader = ChunkCreator.createChunk(3, 0, 0, result.length-1, (byte) 0x14, 0);
+		out.write(resultHeader);
 		out.write(result);
 		System.out.println(">>> END OF SENDING _Result >>>\n\n\n");
 
 		System.out.println(">>> SENDING BW_DONE >>>");
-		byte[] bwDone = Utils.readFile("objects/bw_done");
-		Utils.printStream(bwDone);
-		out.write(bwDone);
+		byte[] BWDoneResult = AMF.onBWDone();
+		byte[] BWDoneHeader = ChunkCreator.createChunk(3, 0, 0, BWDoneResult.length, (byte) 0x14, 0);
+		out.write(BWDoneHeader);
+		out.write(BWDoneResult);
+		
 		System.out.println(">>> END OF SENDING BW_DONE >>>\n\n\n");
 
 		System.out.println("\n\n>>> SENDING RESULT MESSAGE >>>");
-		byte[] resultMessage = Utils.readFile("objects/result_flazer2");
-		Utils.printStream(resultMessage);
+		byte[] resultMessage = AMF.resultMessage();
+		byte[] resultMessageHeader = ChunkCreator.createChunk(3, 0, 0, resultMessage.length, (byte) 0x14, 0);
+		out.write(resultMessageHeader);
 		out.write(resultMessage);
 		System.out.println(">>> END OF RESULT MESSAGE >>>");
 
@@ -274,7 +277,7 @@ public class Server {
 				return;
 			}
 
-			Thread.sleep(20);
+			Thread.sleep(30);
 			// Listening for client (for responses).
 			byte[] arr = new byte[in.available()];
 			if (arr.length > 0) {
