@@ -2,14 +2,14 @@ package rtmp.chunking;
 
 
 public class ControlMessages {
-	private static final int messageStreamID = 0; 
-	private static final int chunkStreamID = 2;
-	private static final byte SET_CHUNK_SIZE = 1;
-	private static final byte ABORT_MESSAGE = 2;
-	private static final byte ACK = 3;
-	private static final byte USER_CONTROL_MESSAGE = 4;
+	public static final int messageStreamID = 0; 
+	public static final int chunkStreamID = 2;
+	public static final byte SET_CHUNK_SIZE = 1;
+	public static final byte ABORT_MESSAGE = 2;
+	public static final byte ACK = 3;
+	public static final byte USER_CONTROL_MESSAGE = 4;
 	public static final byte WINDOW_ACK_SIZE = 5;
-	private static final byte SET_PEER_BW = 6;
+	public static final byte SET_PEER_BW = 6;
 	
 	public static final int STREAM_BEGIN = 0;
 	public static final int STREAM_EOF = 1;
