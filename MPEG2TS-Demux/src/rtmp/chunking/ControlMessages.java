@@ -2,10 +2,10 @@ package rtmp.chunking;
 
 
 public class ControlMessages {
+	
 	public static final int messageStreamID = 0; 
 	public static final int chunkStreamID = 2;
 	public static final byte SET_CHUNK_SIZE = 1;
-	public static final byte ABORT_MESSAGE = 2;
 	public static final byte ACK = 3;
 	public static final byte USER_CONTROL_MESSAGE = 4;
 	public static final byte WINDOW_ACK_SIZE = 5;
