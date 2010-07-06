@@ -13,8 +13,6 @@ import org.junit.Test;
  * A utilities class for reading files, printing streams, converting
  * bytes/integers.
  * 
- * @author Elias
- * 
  */
 public class Utils {
 

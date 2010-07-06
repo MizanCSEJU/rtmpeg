@@ -1,7 +1,7 @@
 package demux;
 
 /**
- * Contains infromation regarding FLVTag as in the FLV spec.
+ * Contains information regarding FLVTag as in the FLV spec.
  * @author Elias
  *
  */

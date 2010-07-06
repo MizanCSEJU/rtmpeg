@@ -10,12 +10,8 @@ import java.util.List;
 import utilities.TSutils;
 
 /**
- * 
  * A de-multiplexer of MPEG2-TS file, the aim of this class is to provide frames
  * from an MPEG2-TS file that is in a H264 format.
- * 
- * @author Elias Khsheibun
- * @author Rashed Rashed
  * 
  */
 public class Demultiplexer {

@@ -23,7 +23,7 @@ import java.util.Random;
 /**
  * RTMP Server side implementation.
  * 
- * 
+ * @author Elias & Rashed
  */
 public class Server {
 
@@ -66,7 +66,6 @@ public class Server {
 	/**
 	 * Runs the server.
 	 * 
-	 * @String the filename to send.
 	 * @throws UnknownHostException
 	 * @throws IOException
 	 * @throws InterruptedException

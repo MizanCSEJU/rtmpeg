@@ -12,7 +12,6 @@ import demux.Frame;
  * Has a number of implementation to creating the video message.
  * This is due to a number of ways that were defined in the RTMP spec.
  * 
- * @author Elias
  *
  */
 public class Serializer {

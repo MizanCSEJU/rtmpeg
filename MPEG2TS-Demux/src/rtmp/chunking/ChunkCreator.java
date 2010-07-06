@@ -1,8 +1,7 @@
 package rtmp.chunking;
 
 /**
- * Chuncking creator as in rtmp standard.
- * @author Elias
+ * Chuncking creator as in RTMP standard.
  *
  */
 public class ChunkCreator {
