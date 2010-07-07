@@ -354,7 +354,7 @@ public class Server {
 				return;
 			}
 		if (args.length == 1)
-			Logger.turnDebugModeOn();
+			Logger.turnLogModeOn();
 
 		Server server = new Server();
 		server.run();
