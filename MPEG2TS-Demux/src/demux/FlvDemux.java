@@ -4,22 +4,22 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 
-import utilities.Utils;
+import utilities.Logger;
 
 /**
- * FLV Demultiplexer.
- * Receives as an input an FLV file and returns FLV packets.
+ * FLV Demultiplexer. Receives as an input an FLV file and returns FLV packets.
  * 
- * @author Elias Khsheibun
- *
+ * 
  */
 public class FlvDemux {
 	private FileInputStream is;
 	File file = null;
-	
+
 	/**
 	 * Constructor
-	 * @param filename - the file name of the FLV (in the main directory).
+	 * 
+	 * @param filename
+	 *            - the file name of the FLV (in the main directory).
 	 * @throws IOException
 	 */
 	public FlvDemux(String filename) throws IOException {
@@ -30,32 +30,32 @@ public class FlvDemux {
 
 	/**
 	 * Reads the FLV header.
+	 * 
 	 * @throws IOException
 	 */
 	public void readHeader() throws IOException {
 		byte signatureA = (byte) is.read();
 		if (signatureA != 0x46)
-			System.err.println("error in signature A");
+			Logger.log("error in signature A");
 
 		byte signatureB = (byte) is.read();
 		if (signatureB != 0x4c)
-			System.err.println("error in signature B");
+			Logger.log("error in signature B");
 
 		byte signatureC = (byte) is.read();
 		if (signatureC != 0x56)
-			System.err.println("error in signature C");
+			Logger.log("error in signature C");
 
 		byte version = (byte) is.read();
-		System.out.println("Version = " + version);
+		Logger.log("Version = " + version);
 
 		byte flags = (byte) is.read();
-		System.out.println("Flags = " + flags);
+		Logger.log("Flags = " + flags);
 
 		char[] headerLength = new char[4];
 		for (int i = 0; i < headerLength.length; i++)
 			headerLength[i] = (char) is.read();
-		System.out
-				.println("Header Length = " + byteArrayToInt(headerLength, 0));
+		Logger.log("Header Length = " + byteArrayToInt(headerLength, 0));
 
 		// End of header
 
@@ -66,12 +66,13 @@ public class FlvDemux {
 
 		for (int i = 0; i < previousTagSize0.length; i++)
 			if (previousTagSize0[i] != 0)
-				System.err.println("Error in tag 0");
+				Logger.log("Error in tag 0");
 
 	}
-	
+
 	/**
 	 * Reads a tag and determines its type.
+	 * 
 	 * @return FLVTag that was read.
 	 * @see FLVTag
 	 * @throws IOException
@@ -80,16 +81,16 @@ public class FlvDemux {
 		int tagType = is.read();
 		switch (tagType) {
 		case 8:
-			System.out.println("audio");
+			Logger.log("audio");
 			break;
 		case 9:
-			System.out.println("video");
+			Logger.log("video");
 			break;
 		case 18:
-			System.out.println("script data");
+			Logger.log("script data");
 			break;
 		default:
-			System.err.println("reserved " + tagType);
+			Logger.log("reserved " + tagType);
 			break;
 		}
 
@@ -99,7 +100,7 @@ public class FlvDemux {
 		char[] tmp3 = new char[4];
 		System.arraycopy(dataSize, 0, tmp3, 1, 3);
 		int dataSizeInt = byteArrayToInt(tmp3, 0);
-		System.out.println("Data size = " + dataSizeInt + " bytes");
+		Logger.log("Data size = " + dataSizeInt + " bytes");
 
 		char[] timestamp = new char[3];
 		for (int i = 0; i < timestamp.length; i++)
@@ -109,10 +110,10 @@ public class FlvDemux {
 		System.arraycopy(timestamp, 0, tmp, 1, 3);
 
 		int timeStamp = byteArrayToInt(tmp, 0);
-		System.out.println("timestamp = " + timeStamp + " milliseconds");
+		Logger.log("timestamp = " + timeStamp + " milliseconds");
 
 		byte extendedTimeStamp = (byte) is.read();
-		System.out.println("Extended timestamp = " + extendedTimeStamp
+		Logger.log("Extended timestamp = " + extendedTimeStamp
 				+ " milliseconds");
 
 		char[] streamID = new char[3];
@@ -122,7 +123,7 @@ public class FlvDemux {
 		for (int i = 0; i < streamID.length; i++)
 			streamID[i] = (char) is.read();
 		int id = byteArrayToInt(tmp2, 0);
-		System.out.println("Stream ID = " + id);
+		Logger.log("Stream ID = " + id);
 
 		byte[] data = new byte[dataSizeInt];
 		is.read(data);
@@ -133,15 +134,18 @@ public class FlvDemux {
 
 	/**
 	 * Converts byteArray to int.
-	 * @param arr - the array
-	 * @param offset - the start offset of the conversion
+	 * 
+	 * @param arr
+	 *            - the array
+	 * @param offset
+	 *            - the start offset of the conversion
 	 * @return
 	 */
 	public static int byteArrayToInt(char[] arr, int offset) {
 		int x = 0;
-		for (int i = 0; i<4; i++) {
-			int shift = (3-i) * 8;
-			x += (arr[i+offset] & 0xFF) << shift;
+		for (int i = 0; i < 4; i++) {
+			int shift = (3 - i) * 8;
+			x += (arr[i + offset] & 0xFF) << shift;
 		}
 		return x;
 	}
@@ -158,9 +162,10 @@ public class FlvDemux {
 			return null;
 		return tag;
 	}
-	
+
 	/**
 	 * Reads the previous tag header.
+	 * 
 	 * @return true if prev tag was available, false otherwise.
 	 * @throws IOException
 	 */
@@ -170,7 +175,7 @@ public class FlvDemux {
 		char[] prevTagSize = new char[4];
 		for (int i = 0; i < prevTagSize.length; i++)
 			prevTagSize[i] = (char) is.read();
-		System.out.println("prevTagSize = " + byteArrayToInt(prevTagSize, 0));
+		Logger.log("prevTagSize = " + byteArrayToInt(prevTagSize, 0));
 		return true;
 	}
 
@@ -193,17 +198,5 @@ public class FlvDemux {
 			return getNextVideoTag();
 		}
 
-	}
-
-	public static void main(String[] args) throws IOException,
-			InterruptedException {
-		char[] tmp = new char[4];
-		tmp[2] = 0x01;
-		tmp[3] = 0x2C;
-		System.out.println(byteArrayToInt(tmp, 0));
-		FlvDemux demux = new FlvDemux("sample.flv");
-		
-		FLVTag tag = demux.getNextVideoTag();
-		Utils.printStream(tag.getData());
 	}
 }

@@ -2,7 +2,6 @@ package rtmp.chunking;
 
 public class ChunkException extends Exception {
 
-
 	/**
 	 * 
 	 */

@@ -43,9 +43,9 @@ public class Utils {
 		for (int i = 0; i < stream.length; i++) {
 			Integer h = ((stream[i] & 0xf0) >> 4);
 			Integer l = (stream[i] & 0x0f);
-			System.out.print(Integer.toHexString(h) + Integer.toHexString(l));
+			Logger.log(Integer.toHexString(h) + Integer.toHexString(l));
 		}
-		System.out.println("\n" + new String(stream));
+		Logger.log("\n" + new String(stream));
 	}
 
 	/**
@@ -79,7 +79,7 @@ public class Utils {
 	}
 
 	/**
-	 * Given an arr of allocated 4 bytes, it copies the reversed representation
+	 * Given an array of allocated 4 bytes, it copies the reversed representation
 	 * of the integer x to the array.
 	 * 
 	 * @param arr

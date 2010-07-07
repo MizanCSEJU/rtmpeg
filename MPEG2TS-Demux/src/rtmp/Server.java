@@ -7,6 +7,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
+import rtmp.amf.AMF;
 import rtmp.chunking.ChunkCreator;
 import rtmp.chunking.ChunkException;
 import rtmp.chunking.ControlMessages;
@@ -15,7 +16,7 @@ import rtmp.chunking.UnsupportedFeature;
 import demux.FLVTag;
 import demux.FlvDemux;
 
-import utilities.AMF;
+import utilities.Logger;
 import utilities.Utils;
 
 import java.util.Random;
@@ -23,7 +24,6 @@ import java.util.Random;
 /**
  * RTMP Server side implementation.
  * 
- * @author Elias & Rashed
  */
 public class Server {
 
@@ -79,15 +79,14 @@ public class Server {
 		handshake();
 		parseUserMessages();
 
-		System.out.println("\n\n>>> SENDING SET CHUNK SIZE >>>");
+		Logger.log("\n\n>>> SENDING SET CHUNK SIZE >>>");
 		byte[] setChunkSize = ControlMessages.setChunkSize(65536, timestamp);
-		Utils.printStream(setChunkSize);
 		out.write(setChunkSize);
-		System.out.println(">>> END OF SET CHUNK SIZE >>>\n\n\n");
+		Logger.log(">>> END OF SET CHUNK SIZE >>>\n\n\n");
 
 		if (fileName != null)
 			sendVideo(fileName);
-		
+
 		out.close();
 		in.close();
 		clientSocket.close();
@@ -101,7 +100,6 @@ public class Server {
 			Utils.waitForStream(in);
 			byte[] arr = new byte[in.available()];
 			in.read(arr);
-			Utils.printStream(arr);
 			parse(arr);
 		}
 	}
@@ -176,37 +174,38 @@ public class Server {
 	 */
 	private void sendStreamBegin() throws ChunkException, UnsupportedFeature,
 			IOException {
-		System.out.println(">>> SENDING STREAM BIGIN >>>"); // in the sniffer
+		Logger.log(">>> SENDING STREAM BIGIN >>>"); // in the sniffer
 		// this message is
 		// identified by
 		// ping :P
 		byte[] ping = ControlMessages.userControlMessage(timestamp, Utils
 				.intToByteArray(streamID), ControlMessages.STREAM_BEGIN);
-		Utils.printStream(ping);
 		out.write(ping);
-		System.out.println(">>> SENDING STREAM BIGIN - END >>>");
+		Logger.log(">>> SENDING STREAM BIGIN - END >>>");
 
-		System.out.println(">>> SENDING _Result >>>");
+		Logger.log(">>> SENDING _result >>>");
 		byte[] result = AMF.netConnectionResult();
-		byte[] resultHeader = ChunkCreator.createChunk(3, 0, 0, result.length-1, (byte) 0x14, 0);
+		byte[] resultHeader = ChunkCreator.createChunk(3, 0, 0,
+				result.length - 1, (byte) 0x14, 0);
 		out.write(resultHeader);
 		out.write(result);
-		System.out.println(">>> END OF SENDING _Result >>>\n\n\n");
+		Logger.log(">>> END OF SENDING _result >>>\n\n\n");
 
-		System.out.println(">>> SENDING BW_DONE >>>");
+		Logger.log(">>> SENDING BW_DONE >>>");
 		byte[] BWDoneResult = AMF.onBWDone();
-		byte[] BWDoneHeader = ChunkCreator.createChunk(3, 0, 0, BWDoneResult.length, (byte) 0x14, 0);
+		byte[] BWDoneHeader = ChunkCreator.createChunk(3, 0, 0,
+				BWDoneResult.length, (byte) 0x14, 0);
 		out.write(BWDoneHeader);
 		out.write(BWDoneResult);
-		
-		System.out.println(">>> END OF SENDING BW_DONE >>>\n\n\n");
+		Logger.log(">>> END OF SENDING BW_DONE >>>\n\n\n");
 
-		System.out.println("\n\n>>> SENDING RESULT MESSAGE >>>");
+		Logger.log("\n\n>>> SENDING RESULT MESSAGE >>>");
 		byte[] resultMessage = AMF.resultMessage();
-		byte[] resultMessageHeader = ChunkCreator.createChunk(3, 0, 0, resultMessage.length, (byte) 0x14, 0);
+		byte[] resultMessageHeader = ChunkCreator.createChunk(3, 0, 0,
+				resultMessage.length, (byte) 0x14, 0);
 		out.write(resultMessageHeader);
 		out.write(resultMessage);
-		System.out.println(">>> END OF RESULT MESSAGE >>>");
+		Logger.log(">>> END OF RESULT MESSAGE >>>");
 
 	}
 
@@ -219,16 +218,14 @@ public class Server {
 	 */
 	private void onConnect() throws IOException, ChunkException,
 			UnsupportedFeature {
-		System.out.println(">>> Sending Window Ack (SERVER BW) >>>");
+		Logger.log(">>> Sending Window Ack (SERVER BW) >>>");
 		byte[] windowAck = ControlMessages.windowAck(windowSize, timestamp);
-		Utils.printStream(windowAck);
 		out.write(windowAck);
-		System.out.println(">>> Sending Window Ack (SERVER BW) END >>>");
-		System.out.println(">>> SENDING SET PEER BW >>>");
+		Logger.log(">>> Sending Window Ack (SERVER BW) END >>>");
+		Logger.log(">>> SENDING SET PEER BW >>>");
 		byte[] windowMessage = ControlMessages.peerBW(windowSize, timestamp);
-		Utils.printStream(windowMessage);
 		out.write(windowMessage);
-		System.out.println(">>> SENDING SET PEER BW END >>>");
+		Logger.log(">>> SENDING SET PEER BW END >>>");
 	}
 
 	/**
@@ -281,7 +278,6 @@ public class Server {
 			byte[] arr = new byte[in.available()];
 			if (arr.length > 0) {
 				in.read(arr);
-				Utils.printStream(arr);
 			}
 
 			tag = dem.getNextVideoTag();
@@ -310,19 +306,19 @@ public class Server {
 	}
 
 	/**
-	 * Makes the initial handshake. Recieves C0,C1,C2 and sends S0,S1,S2
+	 * Makes the initial handshake. Receives C0,C1,C2 and sends S0,S1,S2
 	 * according to the RTMP protocol.
 	 * 
 	 * @throws IOException
 	 */
 	private void handshake() throws IOException {
 		int c0 = in.read();
-		System.out.println("C0 read");
-		System.out.println("C0 = " + c0);
+		Logger.log("C0 read");
+		Logger.log("C0 = " + c0);
 
 		byte[] c1 = new byte[in.available()];
 		in.read(c1);
-		System.out.println("c1 read: " + c1.length + " bytes.");
+		Logger.log("c1 read: " + c1.length + " bytes.");
 
 		out.write(3);
 		byte[] s1 = new byte[1536];
@@ -341,13 +337,24 @@ public class Server {
 
 		Utils.waitForStream(in);
 		byte[] c2 = new byte[1536];
-		System.out.println("No of bytes in c2:" + in.read(c2));
-		System.out.println("C2 read");
+		Logger.log("No of bytes in c2:" + in.read(c2));
+		Logger.log("C2 read");
+		Logger.log("Handshake Done!");
 	}
 
 	public static void main(String args[]) throws UnknownHostException,
 			IOException, InterruptedException, ChunkException,
 			UnsupportedFeature {
+
+		if (args.length > 1 || (args.length == 1 && !args[0].matches("-LOG"))) {
+				System.out.println("Usage:-");
+				System.out
+						.println("To run in debug mode: java -jar server.jar -LOG");
+				System.out.println("otherwise: java -jar server.jar");
+				return;
+			}
+		if (args.length == 1)
+			Logger.turnDebugModeOn();
 
 		Server server = new Server();
 		server.run();

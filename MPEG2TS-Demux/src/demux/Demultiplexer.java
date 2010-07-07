@@ -15,7 +15,7 @@ import utilities.TSutils;
  * 
  */
 public class Demultiplexer {
-	
+
 	private File file;
 	private final static int packetSize = 188;
 	private final static int H264PID = 68;
@@ -198,8 +198,7 @@ public class Demultiplexer {
 		}
 
 		Frame f = new Frame(frame, offset, frame.length,
-				(timestamp * (long) (1000))
-						/ ((long) (ptsTimeResolution)));
+				(timestamp * (long) (1000)) / ((long) (ptsTimeResolution)));
 		offset += frame.length;
 		frameNo++;
 		return f;
@@ -229,11 +228,12 @@ public class Demultiplexer {
 	public static void main(String[] args) throws IOException {
 		Demultiplexer demux = new Demultiplexer("video.mpg");
 		Frame f = demux.getNext();
-		int i=0;
+		int i = 0;
 		do {
-			System.out.println("Frame :"+(i++)+" timestamp: "+f.getTimeStamp());
-		}while ((f=demux.getNext())!=null);
-		
+			System.out.println("Frame :" + (i++) + " timestamp: "
+					+ f.getTimeStamp());
+		} while ((f = demux.getNext()) != null);
+
 	}
 
 }

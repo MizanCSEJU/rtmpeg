@@ -9,8 +9,7 @@ import demux.FlvDemux;
 
 /**
  * Given Flv tags, creates an Flv file.
- * @author Elias
- *
+ * 
  */
 public class FlvCreator {
 	File file = null;
@@ -19,7 +18,9 @@ public class FlvCreator {
 
 	/**
 	 * Constructor
-	 * @param filename - in main directory.
+	 * 
+	 * @param filename
+	 *            - in main directory.
 	 * @throws IOException
 	 */
 	public FlvCreator(String filename) throws IOException {
@@ -29,11 +30,14 @@ public class FlvCreator {
 		file.createNewFile();
 		os = new FileOutputStream(file);
 	}
-	
+
 	/**
 	 * Writes the FLV header as in the FLV Spec.
-	 * @param audio - should be set true if audio is available.
-	 * @param video - should be set true if video is available
+	 * 
+	 * @param audio
+	 *            - should be set true if audio is available.
+	 * @param video
+	 *            - should be set true if video is available
 	 * @throws IOException
 	 */
 	private void writeHeader(boolean audio, boolean video) throws IOException {
@@ -55,6 +59,7 @@ public class FlvCreator {
 
 	/**
 	 * Writes the PrevTagSize as in the FLV standard.
+	 * 
 	 * @throws IOException
 	 */
 	private void writePrevTagSize() throws IOException {
@@ -64,7 +69,9 @@ public class FlvCreator {
 
 	/**
 	 * Writes the FLVTag Data.
-	 * @param tagType - 9 for video, 8 for audio.
+	 * 
+	 * @param tagType
+	 *            - 9 for video, 8 for audio.
 	 * @param dataSize
 	 * @param timeStamp
 	 * @param timeStampExtended
@@ -100,6 +107,7 @@ public class FlvCreator {
 
 	/**
 	 * Writes FrameType + Codec for video tags.
+	 * 
 	 * @throws IOException
 	 */
 	private void writeMetaData() throws IOException {
@@ -118,12 +126,11 @@ public class FlvCreator {
 		FlvDemux demux = new FlvDemux("sample.flv");
 		FLVTag tag = demux.getNextTag();
 
-		
-	
 		while (tag != null) {
 
 			creator.writeFlvTag((byte) tag.getTagType(), tag.getDataSize(), tag
-					.getTimeStamp(), tag.getTimeStampExtended(), tag.getData(),false);
+					.getTimeStamp(), tag.getTimeStampExtended(), tag.getData(),
+					false);
 			creator.writePrevTagSize();
 
 			tag = demux.getNextVideoTag();

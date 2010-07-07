@@ -1,8 +1,10 @@
-package utilities;
+package rtmp.amf;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+
+import utilities.Utils;
 
 /**
  * 
@@ -18,11 +20,11 @@ public class AMF {
 	private static final byte NULL = 0x05;
 	private static final byte END_OBJECT = 0x09;
 
-	
 	/**
 	 * Retrieves the filename in the play message which encoded in AMF
 	 * 
-	 * @param msg - the play message sent from the client
+	 * @param msg
+	 *            - the play message sent from the client
 	 * @return the file name
 	 */
 	public static String getFileName(byte[] msg) {
@@ -130,7 +132,8 @@ public class AMF {
 	 * Adds a number-marker(in AMF) and a number to the output stream
 	 * 
 	 * @param out
-	 * @param d - the number to be coded in AMF
+	 * @param d
+	 *            - the number to be coded in AMF
 	 */
 	private static void addNumber(DataOutputStream out, double d) {
 
@@ -148,8 +151,11 @@ public class AMF {
 	 * Adds a string-marker(optionally) and a string to the output stream
 	 * 
 	 * @param out
-	 * @param str - the string to be coded in AMF
-	 * @param strTag - true to add the string-marker before the string, false otherwise
+	 * @param str
+	 *            - the string to be coded in AMF
+	 * @param strTag
+	 *            - true to add the string-marker before the string, false
+	 *            otherwise
 	 */
 	private static void addString(DataOutputStream out, String str,
 			boolean strTag) {
